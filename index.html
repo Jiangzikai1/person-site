@@ -5,9 +5,1039 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f8fafc" />
   <meta name="description" content="蒋子凯的项目与能力作品集，展示制造业数字化、系统实施与流程管理经验。" />
-  <title>蒋子凯｜项目博客</title>
-  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/style.css" />
+  <title>蒋子凯｜项目与能力作品集</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Crect width='24' height='24' rx='6'/%3E%3Ctext x='6' y='18' font-size='16' font-weight='700' fill='white' font-family='system-ui'%3EZK%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+  <style>
+    /* ===== V5 Styles – 全面优化版 ===== */
+    :root {
+      --bg: #f8fafc;
+      --surface: rgba(255, 255, 255, 0.92);
+      --surface-solid: #ffffff;
+      --surface-soft: #f1f5f9;
+      --text: #1e293b;
+      --text-soft: #475569;
+      --text-faint: #64748b;
+      --line: #e2e8f0;
+      --accent: #2563eb;
+      --accent-dark: #1e3a8a;
+      --accent-soft: #eff6ff;
+      --signal: #3b82f6;
+      --shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+      --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.05);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --container: 1400px;
+      --header-height: 64px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: rgba(30, 41, 59, 0.92);
+      --surface-solid: #1e293b;
+      --surface-soft: #334155;
+      --text: #f8fafc;
+      --text-soft: #cbd5e1;
+      --text-faint: #94a3b8;
+      --line: rgba(241, 245, 249, 0.1);
+      --accent: #60a5fa;
+      --accent-dark: #bfdbfe;
+      --accent-soft: #1e3a8a;
+      --signal: #3b82f6;
+      --shadow: 0 22px 54px rgba(0, 0, 0, .45);
+      --shadow-soft: 0 12px 32px rgba(0, 0, 0, .3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        var(--bg);
+      background-size: 32px 32px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding-top: var(--header-height);
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--container));
+      margin: 0 auto;
+    }
+
+    /* ===== Header ===== */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      height: var(--header-height);
+      background: color-mix(in srgb, var(--bg) 86%, transparent);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid transparent;
+      transition: border-color .25s;
+    }
+    .site-header.scrolled {
+      border-color: var(--line);
+    }
+    .nav-wrap {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--accent-dark);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .site-nav {
+      margin-left: auto;
+      display: flex;
+      gap: 22px;
+    }
+    .site-nav a {
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 4px 0;
+      transition: color .2s;
+      position: relative;
+    }
+    .site-nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: scaleX(0);
+      transition: transform .25s;
+    }
+    .site-nav a:hover {
+      color: var(--accent-dark);
+    }
+    .site-nav a:hover::after {
+      transform: scaleX(1);
+    }
+    .nav-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .theme-toggle,
+    .nav-toggle {
+      border: 1px solid var(--line);
+      background: var(--surface-solid);
+      color: var(--text);
+      border-radius: 12px;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      transition: background .2s, border-color .2s;
+    }
+    .theme-toggle:hover,
+    .nav-toggle:hover {
+      border-color: var(--accent);
+      background: var(--surface-soft);
+    }
+    .nav-toggle {
+      display: none;
+      padding: 8px;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-toggle span {
+      display: block;
+      height: 2px;
+      width: 20px;
+      background: currentColor;
+      border-radius: 2px;
+      transition: .25s;
+    }
+
+    /* ===== Typography ===== */
+    .eyebrow {
+      display: block;
+      color: var(--text-faint);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .title-wrap h2 {
+      margin: 0;
+      font-size: 1.6rem;
+      color: var(--accent-dark);
+      letter-spacing: -0.02em;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 14px;
+    }
+    .sort-note {
+      color: var(--text-faint);
+      font-size: 0.8rem;
+    }
+
+    /* ===== Overview Section ===== */
+    .overview-section {
+      padding: 20px 0 32px;
+    }
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+    }
+
+    .profile-panel,
+    .project-overview,
+    .experience-strip,
+    .detail-card,
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ===== Profile Panel ===== */
+    .profile-panel {
+      display: flex;
+      flex-direction: column;
+      padding: 28px 26px;
+    }
+    .profile-head h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      line-height: 1.1;
+    }
+    .profile-subtitle {
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .profile-intro {
+      margin: 14px 0 18px;
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .profile-facts {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    .fact {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-solid);
+      transition: border-color .2s, transform .2s;
+    }
+    .fact:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .fact-icon {
+      color: var(--accent);
+      display: flex;
+      flex-shrink: 0;
+    }
+    .fact-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .fact-text span {
+      color: var(--text-faint);
+      font-size: 0.7rem;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .fact-text strong {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .profile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all .2s;
+      gap: 6px;
+    }
+    .button-primary {
+      background: var(--accent-dark);
+      color: #fff;
+    }
+    .button-primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, .25);
+    }
+    .button-secondary {
+      background: var(--surface-soft);
+      color: var(--accent-dark);
+      border: 1px solid var(--line);
+    }
+    .button-secondary:hover {
+      border-color: var(--accent);
+      background: var(--surface-solid);
+    }
+
+    /* ===== Project Overview ===== */
+    .project-overview {
+      padding: 26px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+    .overview-cards {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+      flex: 1;
+      /* 移除 max-height 限制，让内容完整展开 */
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface-solid);
+      padding: 20px;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+      cursor: pointer;
+    }
+    .project-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+      border-color: var(--accent);
+    }
+    .project-card:active {
+      transform: translateY(0);
+    }
+    .project-card-main {
+      justify-content: space-between;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-faint);
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .card-top-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Tags */
+    .tag {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .tag-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .tag-blue {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .tag-purple {
+      background: #f3e8ff;
+      color: #6b21a8;
+    }
+    [data-theme="dark"] .tag-green {
+      background: rgba(22, 101, 52, 0.35);
+      color: #4ade80;
+    }
+    [data-theme="dark"] .tag-blue {
+      background: rgba(30, 64, 175, 0.35);
+      color: #60a5fa;
+    }
+    [data-theme="dark"] .tag-purple {
+      background: rgba(107, 33, 168, 0.35);
+      color: #c084fc;
+    }
+
+    .card-content h3 {
+      margin: 0 0 6px;
+      font-size: 1.4rem;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .card-content p {
+      margin: 0 0 12px;
+      color: var(--text-soft);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .compact-card .card-content h3 {
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+    .compact-card .card-content p {
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .card-tags span {
+      background: var(--surface-soft);
+      color: var(--text-faint);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .card-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-item strong {
+      font-size: 1.25rem;
+      color: var(--text);
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-item span {
+      font-size: 0.7rem;
+      color: var(--text-faint);
+    }
+
+    .project-card-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+    .scroll-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .compact-card {
+      padding: 16px 18px;
+    }
+    .scroll-indicator {
+      display: none;
+      justify-content: center;
+      color: var(--text-faint);
+      padding-top: 2px;
+    }
+
+    /* ===== Experience Timeline ===== */
+    .experience-strip {
+      margin-top: 18px;
+      padding: 22px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .experience-label {
+      display: flex;
+      flex-direction: column;
+    }
+    .experience-label .eyebrow {
+      margin-bottom: 2px;
+    }
+    .experience-label h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      letter-spacing: -0.02em;
+    }
+    .experience-track {
+      display: flex;
+      position: relative;
+      gap: 16px;
+      padding-top: 24px;
+    }
+    .experience-track::before {
+      content: "";
+      position: absolute;
+      top: 7px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--line);
+      border-radius: 2px;
+    }
+    .experience-item {
+      position: relative;
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-solid);
+      transition: transform .2s, border-color .2s;
+      cursor: default;
+    }
+    .experience-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .experience-item::before {
+      content: "";
+      position: absolute;
+      top: -27px;
+      left: 20px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-dark);
+      border: 3px solid var(--surface);
+      box-shadow: 0 0 0 2px var(--line);
+    }
+    .exp-content .year {
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .exp-content strong {
+      display: block;
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+    .exp-content p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-faint);
+    }
+    .exp-arrow {
+      color: var(--text-faint);
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-left: 10px;
+    }
+
+    /* ===== Project Detail Section ===== */
+    .project-detail-section,
+    .skills-section {
+      padding: 40px 0 48px;
+    }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+    .section-heading p {
+      max-width: 480px;
+      color: var(--text-soft);
+      font-size: 0.9rem;
+      margin: 0;
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 16px;
+    }
+    .detail-card {
+      display: flex;
+      gap: 20px;
+      padding: 24px 28px;
+      border-radius: var(--radius-xl);
+      transition: transform .2s, border-color .2s;
+      cursor: default;
+    }
+    .detail-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .detail-index {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-faint);
+      padding-top: 2px;
+      flex-shrink: 0;
+    }
+    .detail-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .detail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .detail-head h3 {
+      margin: 6px 0 0;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      line-height: 1.2;
+    }
+    .detail-date {
+      color: var(--text-faint);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .detail-summary {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      max-width: 700px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .capability {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-solid);
+      transition: border-color .2s;
+    }
+    .capability:hover {
+      border-color: var(--accent);
+    }
+    .capability span {
+      display: block;
+      color: var(--text-faint);
+      font-size: 0.7rem;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .capability strong {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    /* ===== Skills ===== */
+    .skills-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .skill-card {
+      padding: 20px 22px;
+      transition: transform .2s, border-color .2s;
+    }
+    .skill-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .skill-card span {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-faint);
+    }
+    .skill-card h3 {
+      margin: 8px 0 4px;
+      font-size: 1.2rem;
+      color: var(--accent-dark);
+      line-height: 1.2;
+    }
+    .skill-card p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+
+    /* ===== Footer ===== */
+    .site-footer {
+      padding: 28px 0;
+      border-top: 1px solid var(--line);
+      margin-top: 20px;
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-faint);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .footer-inner a:hover {
+      color: var(--accent-dark);
+    }
+
+    /* ===== Animations ===== */
+    .hover-lift {
+      transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .hover-lift:hover {
+      transform: translateY(-2px);
+      z-index: 2;
+      border-color: var(--accent);
+    }
+    .hover-lift:active {
+      transform: translateY(0);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(6px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: var(--surface-solid);
+      width: 90%;
+      max-width: 700px;
+      border-radius: var(--radius-xl);
+      padding: 36px 40px;
+      box-shadow: var(--shadow);
+      position: relative;
+      transform: translateY(24px) scale(0.98);
+      transition: all 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+      max-height: 82vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.active .modal-content {
+      transform: translateY(0) scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--surface-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-soft);
+      font-size: 1.3rem;
+      cursor: pointer;
+      border: none;
+      transition: background .2s;
+    }
+    .modal-close:hover {
+      background: var(--line);
+      color: var(--text);
+    }
+    .modal-header {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal-title {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--accent-dark);
+      margin: 0 0 6px 0;
+      line-height: 1.2;
+    }
+    .modal-meta {
+      color: var(--text-faint);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .modal-body {
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .modal-body h4 {
+      color: var(--text);
+      font-size: 1.05rem;
+      margin: 18px 0 8px 0;
+      font-weight: 700;
+    }
+    .modal-body ul {
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+    .modal-body li {
+      margin-bottom: 6px;
+    }
+    .modal-body li strong {
+      color: var(--text);
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1200px) {
+      .overview-grid,
+      .skills-layout {
+        grid-template-columns: 1fr;
+      }
+      .profile-panel {
+        padding: 22px 24px;
+      }
+      .overview-cards {
+        grid-template-columns: 1fr;
+      }
+      .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .section-heading p {
+        text-align: left;
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .nav-wrap {
+        gap: 16px;
+      }
+      .site-nav {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        background: var(--surface-solid);
+        border-bottom: 1px solid var(--line);
+        padding: 16px 24px;
+        gap: 12px;
+        box-shadow: var(--shadow);
+      }
+      .site-nav.open {
+        display: flex;
+      }
+      .site-nav a {
+        padding: 8px 0;
+        font-size: 1rem;
+      }
+      .site-nav a::after {
+        display: none;
+      }
+      .nav-toggle {
+        display: flex;
+      }
+
+      .experience-track {
+        flex-direction: column;
+        padding-top: 0;
+        padding-left: 24px;
+        gap: 12px;
+      }
+      .experience-track::before {
+        top: 0;
+        bottom: 0;
+        left: 7px;
+        width: 2px;
+        height: auto;
+      }
+      .experience-item::before {
+        top: 50%;
+        transform: translateY(-50%);
+        left: -23px;
+      }
+      .experience-item {
+        padding: 12px 16px;
+      }
+      .exp-arrow {
+        display: none;
+      }
+
+      .capability-grid,
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+      .detail-card {
+        flex-direction: column;
+        padding: 18px 20px;
+        gap: 10px;
+      }
+      .detail-index {
+        padding-top: 0;
+      }
+      .card-stats {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .project-card-main .card-stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .modal-content {
+        padding: 28px 20px;
+      }
+      .modal-title {
+        font-size: 1.4rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        width: min(calc(100% - 16px), var(--container));
+      }
+      .profile-panel {
+        padding: 18px 16px;
+      }
+      .project-overview {
+        padding: 18px 16px;
+      }
+      .project-card {
+        padding: 14px 16px;
+      }
+      .compact-card {
+        padding: 12px 14px;
+      }
+      .card-content h3 {
+        font-size: 1.15rem;
+      }
+      .compact-card .card-content h3 {
+        font-size: 0.95rem;
+      }
+      .experience-strip {
+        padding: 16px 18px;
+      }
+      .experience-item {
+        padding: 10px 14px;
+      }
+      .exp-content strong {
+        font-size: 0.85rem;
+      }
+      .detail-card {
+        padding: 14px 16px;
+      }
+      .detail-head h3 {
+        font-size: 1.2rem;
+      }
+      .skill-card {
+        padding: 14px 16px;
+      }
+      .skill-card h3 {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="site-header" id="top">
@@ -28,7 +1058,7 @@
       <div class="nav-actions">
         <button class="theme-toggle hover-lift" type="button" aria-label="切换主题">◐</button>
         <button class="nav-toggle hover-lift" type="button" aria-label="打开导航" aria-expanded="false">
-          <span></span><span></span>
+          <span></span><span></span><span></span>
         </button>
       </div>
     </div>
@@ -51,7 +1081,7 @@
             </p>
 
             <div class="profile-facts">
-              <div class="fact hover-lift">
+              <div class="fact">
                 <div class="fact-icon">
                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 </div>
@@ -60,7 +1090,7 @@
                   <strong>Thailand</strong>
                 </div>
               </div>
-              <div class="fact hover-lift">
+              <div class="fact">
                 <div class="fact-icon">
                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
                 </div>
@@ -69,7 +1099,7 @@
                   <strong>MES · APS · Oracle</strong>
                 </div>
               </div>
-              <div class="fact hover-lift">
+              <div class="fact">
                 <div class="fact-icon">
                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                 </div>
@@ -78,7 +1108,7 @@
                   <strong>拆解 · 推进 · 闭环</strong>
                 </div>
               </div>
-              <div class="fact hover-lift">
+              <div class="fact">
                 <div class="fact-icon">
                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                 </div>
@@ -91,11 +1121,11 @@
 
             <div class="profile-actions">
               <a class="button button-primary hover-lift" href="#projects">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                 查看项目详情
               </a>
               <a class="button button-secondary hover-lift" href="#skills">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 查看能力矩阵
               </a>
             </div>
@@ -127,8 +1157,6 @@
                     <span>MES</span><span>SMT</span><span>DIP</span><span>Dashboard</span>
                   </div>
                 </div>
-                
-                <!-- 新增底部统计数据 -->
                 <div class="card-stats">
                   <div class="stat-item">
                     <strong>12+</strong>
@@ -147,7 +1175,7 @@
 
               <div class="project-card-stack">
                 <div class="scroll-wrap">
-                  <article class="project-card compact-card hover-lift"> data-project="aps"
+                  <article class="project-card compact-card hover-lift" data-project="aps">
                     <div class="card-top">
                       <div class="card-top-left"><span>02</span><span class="tag tag-blue">海外项目</span></div>
                       <span>2026</span>
@@ -159,7 +1187,7 @@
                     <div class="card-tags"><span>APS</span><span>Planning</span></div>
                   </article>
 
-                  <article class="project-card compact-card hover-lift"> data-project="oracle"
+                  <article class="project-card compact-card hover-lift" data-project="oracle">
                     <div class="card-top">
                       <div class="card-top-left"><span>03</span><span class="tag tag-purple">业务系统</span></div>
                       <span>2025–2026</span>
@@ -171,7 +1199,7 @@
                     <div class="card-tags"><span>Oracle</span><span>EIP</span></div>
                   </article>
 
-                  <article class="project-card compact-card hover-lift"> data-project="portfolio"
+                  <article class="project-card compact-card hover-lift" data-project="portfolio">
                     <div class="card-top">
                       <div class="card-top-left"><span>04</span><span class="tag tag-green">个人项目</span></div>
                       <span>2026</span>
@@ -191,7 +1219,7 @@
           </section>
         </div>
 
-        <!-- 底部：时间线 -->
+        <!-- 底部：时间线 —— 已修复完整显示 -->
         <section class="experience-strip reveal" id="experience">
           <div class="experience-label">
             <span class="eyebrow">WORK EXPERIENCE TIMELINE</span>
@@ -336,7 +1364,7 @@
     <!-- 能力矩阵 -->
     <section class="skills-section" id="skills">
       <div class="container skills-layout">
-        <div class="section-heading reveal">
+        <div class="section-heading reveal" style="flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:0;">
           <div class="title-wrap">
             <span class="eyebrow">CAPABILITY MATRIX</span>
             <h2>能力矩阵</h2>
@@ -376,7 +1404,6 @@
     </div>
   </footer>
 
-
   <!-- 项目详情弹窗 -->
   <div class="modal-overlay" id="project-modal">
     <div class="modal-content">
@@ -385,11 +1412,179 @@
         <h3 class="modal-title" id="modal-title">项目名称</h3>
         <div class="modal-meta" id="modal-meta">2025 - 2026</div>
       </div>
-      <div class="modal-body" id="modal-body">
-      </div>
+      <div class="modal-body" id="modal-body"></div>
     </div>
   </div>
 
-  <script src="js/main.js"></script>
+  <script>
+    (() => {
+      // ===== Theme =====
+      const root = document.documentElement;
+      const themeToggle = document.querySelector('.theme-toggle');
+      const navToggle = document.querySelector('.nav-toggle');
+      const nav = document.querySelector('.site-nav');
+      const header = document.querySelector('.site-header');
+
+      const saved = localStorage.getItem('portfolio-theme-v5');
+      const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      root.dataset.theme = saved || (prefersDark ? 'dark' : 'light');
+
+      const syncTheme = () => {
+        if (themeToggle) themeToggle.textContent = root.dataset.theme === 'dark' ? '☀' : '◐';
+      };
+      syncTheme();
+
+      themeToggle?.addEventListener('click', () => {
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('portfolio-theme-v5', root.dataset.theme);
+        syncTheme();
+      });
+
+      // ===== Mobile Nav =====
+      navToggle?.addEventListener('click', () => {
+        const open = nav.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', String(open));
+      });
+
+      document.querySelectorAll('.site-nav a').forEach(link => {
+        link.addEventListener('click', () => {
+          nav.classList.remove('open');
+          navToggle?.setAttribute('aria-expanded', 'false');
+        });
+      });
+
+      // ===== Scroll header =====
+      addEventListener('scroll', () => {
+        header?.classList.toggle('scrolled', scrollY > 6);
+      }, { passive: true });
+
+      // ===== Reveal =====
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .1 });
+
+      document.querySelectorAll('.reveal').forEach((element, index) => {
+        element.style.transitionDelay = `${Math.min(index % 3, 2) * 40}ms`;
+        observer.observe(element);
+      });
+
+      // ===== Project Data =====
+      const projectData = {
+        mes: {
+          title: "制造业 MES 系统实施",
+          meta: "2025–2026 | 核心项目",
+          content: `
+            <h4>项目背景</h4>
+            <p>为提升制造现场的透明度与执行效率，全面实施 MES 系统管控生产全生命周期。</p>
+            <h4>核心职责</h4>
+            <ul>
+              <li><strong>需求梳理：</strong>主导 SMT 与 DIP 车间的业务流程梳理，输出标准化需求文档。</li>
+              <li><strong>系统测试与上线：</strong>负责系统功能测试（UAT）、数据准备及现场操作培训。</li>
+              <li><strong>优化闭环：</strong>上线后持续跟进异常问题，搭建车间可视化 Dashboard，实现数据驱动管理。</li>
+            </ul>
+            <h4>成果与沉淀</h4>
+            <p>完成 12+ 核心模块的落地，生产效率提升 30%，实现 100% 的平稳上线支持。</p>
+          `
+        },
+        aps: {
+          title: "泰国 APS 项目",
+          meta: "2026 | 海外项目",
+          content: `
+            <h4>项目背景</h4>
+            <p>为优化跨国工厂的产能协同，在泰国生产基地推广高级计划与排程（APS）系统。</p>
+            <h4>核心职责</h4>
+            <ul>
+              <li><strong>跨国沟通：</strong>克服语言障碍，与中泰两地业务人员确认排程逻辑与需求。</li>
+              <li><strong>数据验证：</strong>协助完成主数据清洗与本地化映射，确保计划准确性。</li>
+              <li><strong>现场支持：</strong>提供上线支持，协同各部门确保排程结果在车间得到准确执行。</li>
+            </ul>
+            <h4>成果与沉淀</h4>
+            <p>成功完成 APS 系统在泰国工厂的试点上线，计划准确率提升 22%，为后续全面推广奠定基础。</p>
+          `
+        },
+        oracle: {
+          title: "Oracle / EIP 流程支持",
+          meta: "2025–2026 | 业务系统",
+          content: `
+            <h4>项目背景</h4>
+            <p>通过梳理企业内部业务规则，推动 Oracle ERP 与 EIP 系统的深度融合与流程自动化。</p>
+            <h4>核心职责</h4>
+            <ul>
+              <li><strong>流程梳理：</strong>分析跨部门协作痛点，优化系统审批流与业务流转路径。</li>
+              <li><strong>问题跟进：</strong>作为业务与研发团队的沟通桥梁，推进系统问题修复与新需求落地。</li>
+              <li><strong>文档沉淀：</strong>输出业务操作手册与 FAQ，降低日常支持成本。</li>
+            </ul>
+            <h4>成果与沉淀</h4>
+            <p>完成 8 个核心业务流程的梳理与优化，跨部门协作效率提升 25%。</p>
+          `
+        },
+        portfolio: {
+          title: "Portfolio V5",
+          meta: "2026 | 个人项目",
+          content: `
+            <h4>项目背景</h4>
+            <p>个人能力、项目经验与技术沉淀的数字化展示平台。</p>
+            <h4>实现细节</h4>
+            <ul>
+              <li>使用 HTML / CSS / JavaScript 独立开发，无依赖外部重型框架。</li>
+              <li>响应式布局设计，支持多端适配与暗黑模式切换。</li>
+              <li>项目卡片点击弹窗展示详情，交互流畅。</li>
+            </ul>
+            <h4>收获</h4>
+            <p>通过本次个人项目的设计与开发，进一步提升了前端工程化与 UI/UX 设计能力。</p>
+          `
+        }
+      };
+
+      // ===== Modal =====
+      const modal = document.getElementById('project-modal');
+      const modalClose = document.querySelector('.modal-close');
+      const modalTitle = document.getElementById('modal-title');
+      const modalMeta = document.getElementById('modal-meta');
+      const modalBody = document.getElementById('modal-body');
+
+      // 为所有带 data-project 的卡片绑定点击事件
+      document.querySelectorAll('.project-card[data-project]').forEach(card => {
+        card.addEventListener('click', function(e) {
+          // 如果点击的是卡片内部链接或按钮，不触发弹窗
+          if (e.target.closest('a') || e.target.closest('button')) return;
+          const id = this.getAttribute('data-project');
+          const data = projectData[id];
+          if (data) {
+            modalTitle.textContent = data.title;
+            modalMeta.textContent = data.meta;
+            modalBody.innerHTML = data.content;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+          }
+        });
+      });
+
+      // 关闭弹窗
+      const closeModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      };
+
+      modalClose?.addEventListener('click', closeModal);
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      // 防止弹窗内滚动冒泡
+      modal?.querySelector('.modal-content')?.addEventListener('wheel', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
+
+    })();
+  </script>
 </body>
 </html>
