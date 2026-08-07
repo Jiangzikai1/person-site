@@ -8,7 +8,7 @@
   <title>蒋子凯｜项目博客</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Crect width='24' height='24' rx='6'/%3E%3Ctext x='6' y='18' font-size='16' font-weight='700' fill='white' font-family='system-ui'%3EZK%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
   <style>
-    /* ===== V5 Styles – 卡片高度优化 + 底部浏览量 ===== */
+    /* ===== V5 Styles – 卡片高度优化 + 底部浏览量 + 滚动条 + 详情背景图 ===== */
     :root {
       --bg: #f8fafc;
       --surface: rgba(255, 255, 255, 0.92);
@@ -500,51 +500,74 @@
     .project-card-stack {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 0;
       position: relative;
+      height: 100%;
     }
     .scroll-wrap {
       display: flex;
       flex-direction: column;
       gap: 6px;
       flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      padding-right: 2px;
     }
-    .compact-card {
-      padding: 8px 12px 6px;
+    /* 自定义滚动条 */
+    .scroll-wrap::-webkit-scrollbar {
+      width: 3px;
     }
-    .scroll-indicator {
-      display: none;
-      justify-content: center;
-      color: var(--text-faint);
-      padding-top: 2px;
+    .scroll-wrap::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scroll-wrap::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 3px;
+    }
+    .scroll-wrap::-webkit-scrollbar-thumb:hover {
+      background: var(--text-faint);
     }
 
-    /* ===== Experience Timeline – 露出一半 ===== */
+    .compact-card {
+      padding: 8px 12px 6px;
+      flex-shrink: 0;
+    }
+    .scroll-indicator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-faint);
+      padding-top: 6px;
+      padding-bottom: 2px;
+      flex-shrink: 0;
+      gap: 4px;
+      font-size: 0.6rem;
+      letter-spacing: 0.04em;
+    }
+    .scroll-indicator svg {
+      animation: scroll-hint 2s ease-in-out infinite;
+    }
+    @keyframes scroll-hint {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(3px);
+      }
+    }
+
+    /* ===== Experience Timeline – 独立卡片，修复偏移 ===== */
     .experience-strip {
-      margin-top: 4px;
-      padding: 14px 22px 16px;
+      margin-top: 14px;
+      padding: 16px 22px 18px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      border-top: 1px solid var(--line);
-      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-      background: var(--surface);
       border: 1px solid var(--line);
-      border-top: none;
-      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-      position: relative;
-      margin-top: -12px;
-      padding-top: 18px;
-      z-index: 1;
-    }
-    .experience-strip::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--surface);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(4px);
     }
 
     .experience-label {
@@ -566,12 +589,12 @@
       display: flex;
       position: relative;
       gap: 12px;
-      padding-top: 18px;
+      padding-top: 24px;
     }
     .experience-track::before {
       content: "";
       position: absolute;
-      top: 5px;
+      top: 10px;
       left: 0;
       right: 0;
       height: 2px;
@@ -598,7 +621,7 @@
     .experience-item::before {
       content: "";
       position: absolute;
-      top: -21px;
+      top: -14px;
       left: 16px;
       width: 8px;
       height: 8px;
@@ -657,6 +680,8 @@
       display: grid;
       gap: 14px;
     }
+
+    /* 详情卡片 – 支持上半部分背景图 + 上至下渐变 */
     .detail-card {
       display: flex;
       gap: 16px;
@@ -664,6 +689,16 @@
       border-radius: var(--radius-xl);
       transition: transform .2s, border-color .2s;
       cursor: default;
+      position: relative;
+      overflow: hidden;
+      /* 背景图层：渐变遮罩(上透明→下背景色) + 自定义图片 */
+      background:
+        linear-gradient(to bottom,
+          transparent 20%,
+          var(--surface-solid) 65%
+        ) no-repeat,
+        var(--detail-bg-image, none) no-repeat top center / 100% auto;
+      background-color: var(--surface-solid);
     }
     .detail-card:hover {
       border-color: var(--accent);
@@ -675,10 +710,14 @@
       color: var(--text-faint);
       padding-top: 2px;
       flex-shrink: 0;
+      position: relative;
+      z-index: 1;
     }
     .detail-content {
       flex: 1;
       min-width: 0;
+      position: relative;
+      z-index: 1;
     }
     .detail-head {
       display: flex;
@@ -777,7 +816,7 @@
       line-height: 1.4;
     }
 
-    /* ===== Footer – 新增浏览量 ===== */
+    /* ===== Footer – 浏览量 ===== */
     .site-footer {
       padding: 20px 0 18px;
       border-top: 1px solid var(--line);
@@ -951,10 +990,18 @@
         grid-template-columns: 1fr;
         max-height: none;
       }
+      .project-card-stack {
+        height: auto;
+      }
+      .scroll-wrap {
+        overflow-y: visible;
+        max-height: none;
+      }
+      .scroll-indicator {
+        display: none;
+      }
       .experience-strip {
-        margin-top: 12px;
-        border-top: 1px solid var(--line);
-        border-radius: var(--radius-xl);
+        margin-top: 14px;
       }
       .section-heading {
         flex-direction: column;
@@ -1052,10 +1099,15 @@
       .overview-cards {
         max-height: none;
       }
+      .scroll-wrap {
+        overflow-y: visible;
+        max-height: none;
+      }
+      .scroll-indicator {
+        display: none;
+      }
       .experience-strip {
-        margin-top: 12px;
-        border-top: 1px solid var(--line);
-        border-radius: var(--radius-xl);
+        margin-top: 14px;
       }
       .footer-inner {
         flex-direction: column;
@@ -1091,6 +1143,7 @@
       }
       .experience-strip {
         padding: 12px 14px 14px;
+        margin-top: 14px;
       }
       .experience-item {
         padding: 8px 12px;
@@ -1113,10 +1166,12 @@
       .overview-cards {
         max-height: none;
       }
-      .experience-strip {
-        margin-top: 12px;
-        border-top: 1px solid var(--line);
-        border-radius: var(--radius-xl);
+      .scroll-wrap {
+        overflow-y: visible;
+        max-height: none;
+      }
+      .scroll-indicator {
+        display: none;
       }
     }
   </style>
@@ -1213,7 +1268,7 @@
             </div>
           </aside>
 
-          <!-- 右侧卡片：项目总览 + 时间线（露出一半） -->
+          <!-- 右侧卡片：项目总览 + 时间线 -->
           <div class="reveal" style="display:flex;flex-direction:column;gap:0;">
             <section class="project-overview">
               <div class="section-title-row">
@@ -1295,13 +1350,14 @@
                     </article>
                   </div>
                   <div class="scroll-indicator">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    滚动查看更多
                   </div>
                 </div>
               </div>
             </section>
 
-            <!-- 时间线：露出一半 -->
+            <!-- 时间线：独立卡片 -->
             <section class="experience-strip" id="experience">
               <div class="experience-label">
                 <span class="eyebrow">WORK EXPERIENCE TIMELINE</span>
@@ -1341,6 +1397,23 @@
     </section>
 
     <!-- 项目详情 -->
+    <!--
+      ===== 背景图片使用说明 =====
+      图片存放路径：assets/icons/
+      每个 detail-card 通过内联样式 --detail-bg-image 设置背景图。
+      支持的图片格式：jpg / png / webp / svg
+      图片会自动显示在卡片上半部分，并通过渐变过渡到卡片背景色。
+      如果图片不存在或加载失败，卡片将回退为纯背景色，不影响阅读。
+
+      推荐图片尺寸：宽度 ≥ 800px，高度 200-400px
+      替换方式：将你的图片放入 assets/icons/ 文件夹，
+      然后修改下方对应卡片的 url() 路径即可。
+
+      示例：
+      --detail-bg-image: url('assets/icons/mes-bg.jpg');
+      --detail-bg-image: url('assets/icons/aps-bg.png');
+      --detail-bg-image: url('assets/icons/oracle-bg.webp');
+    -->
     <section class="project-detail-section" id="projects">
       <div class="container">
         <div class="section-heading reveal">
@@ -1352,7 +1425,9 @@
         </div>
 
         <div class="detail-list">
-          <article class="detail-card reveal hover-lift">
+          <!-- MES 项目 – 背景图：assets/icons/mes-bg.jpg -->
+          <article class="detail-card reveal hover-lift"
+            style="--detail-bg-image: url('assets/icons/mes-bg.jpg');">
             <div class="detail-index">01</div>
             <div class="detail-content">
               <div class="detail-head">
@@ -1382,7 +1457,9 @@
             </div>
           </article>
 
-          <article class="detail-card reveal hover-lift">
+          <!-- APS 项目 – 背景图：assets/icons/aps-bg.jpg -->
+          <article class="detail-card reveal hover-lift"
+            style="--detail-bg-image: url('assets/icons/aps-bg.jpg');">
             <div class="detail-index">02</div>
             <div class="detail-content">
               <div class="detail-head">
@@ -1412,7 +1489,9 @@
             </div>
           </article>
 
-          <article class="detail-card reveal hover-lift">
+          <!-- Oracle 项目 – 背景图：assets/icons/oracle-bg.jpg -->
+          <article class="detail-card reveal hover-lift"
+            style="--detail-bg-image: url('assets/icons/oracle-bg.jpg');">
             <div class="detail-index">03</div>
             <div class="detail-content">
               <div class="detail-head">
@@ -1591,7 +1670,6 @@
           });
       };
 
-      // 页面加载完成后获取浏览量
       if (document.readyState === 'complete') {
         fetchVisitCount();
       } else {
