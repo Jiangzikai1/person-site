@@ -6,31 +6,44 @@
   <meta name="theme-color" content="#f8fafc" />
   <meta name="description" content="蒋子凯的项目与能力作品集，展示制造业数字化、系统实施与流程管理经验。" />
   <title>蒋子凯｜项目博客</title>
+  <!--
+    ======================================================
+    图标 (Favicon) 设置
+    使用内联 SVG 数据，无需额外图片文件
+    如需替换为自定义图标，将 href 改为你的 .ico/.png 路径即可
+    ======================================================
+  -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Crect width='24' height='24' rx='6'/%3E%3Ctext x='6' y='18' font-size='16' font-weight='700' fill='white' font-family='system-ui'%3EZK%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+
   <style>
-    /* ===== V5 Styles – 卡片高度优化 + 底部浏览量 + 滚动条 + 详情背景图 ===== */
+    /* ============================================================
+       🎨 CSS 变量 (设计令牌) – 全局配色、阴影、圆角等
+       修改这里的值即可全局调整视觉风格
+       ============================================================ */
     :root {
-      --bg: #f8fafc;
-      --surface: rgba(255, 255, 255, 0.92);
-      --surface-solid: #ffffff;
-      --surface-soft: #f1f5f9;
-      --text: #1e293b;
-      --text-soft: #475569;
-      --text-faint: #64748b;
-      --line: #e2e8f0;
-      --accent: #2563eb;
-      --accent-dark: #1e3a8a;
-      --accent-soft: #eff6ff;
-      --signal: #3b82f6;
-      --shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
-      --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.05);
-      --radius-xl: 24px;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --container: 1400px;
-      --header-height: 64px;
+      /* ---- 浅色主题 (默认) ---- */
+      --bg: #f8fafc;                          /* 页面背景色 */
+      --surface: rgba(255, 255, 255, 0.92);    /* 卡片背景 (半透明) */
+      --surface-solid: #ffffff;                /* 卡片背景 (纯色) */
+      --surface-soft: #f1f5f9;                 /* 次级背景色 */
+      --text: #1e293b;                         /* 主文字颜色 */
+      --text-soft: #475569;                    /* 次级文字颜色 */
+      --text-faint: #64748b;                   /* 辅助文字颜色 */
+      --line: #e2e8f0;                         /* 边框/分割线颜色 */
+      --accent: #2563eb;                       /* 强调色 (亮蓝) */
+      --accent-dark: #1e3a8a;                  /* 深色强调 (用于标题) */
+      --accent-soft: #eff6ff;                  /* 浅色强调背景 */
+      --signal: #3b82f6;                       /* 信号色 */
+      --shadow: 0 20px 40px rgba(15, 23, 42, 0.08);   /* 大阴影 */
+      --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.05); /* 小阴影 */
+      --radius-xl: 24px;                       /* 超大圆角 */
+      --radius-lg: 18px;                       /* 大圆角 */
+      --radius-md: 12px;                       /* 中圆角 */
+      --container: 1400px;                     /* 内容最大宽度 */
+      --header-height: 64px;                   /* 顶部导航高度 */
     }
 
+    /* ---- 深色主题 ---- */
     [data-theme="dark"] {
       --bg: #0f172a;
       --surface: rgba(30, 41, 59, 0.92);
@@ -48,15 +61,19 @@
       --shadow-soft: 0 12px 32px rgba(0, 0, 0, .3);
     }
 
+    /* ============================================================
+       🔧 基础重置与全局样式
+       ============================================================ */
     * {
       box-sizing: border-box;
     }
     html {
-      scroll-behavior: smooth;
+      scroll-behavior: smooth;   /* 平滑滚动 */
     }
     body {
       margin: 0;
       color: var(--text);
+      /* 网格背景纹理 */
       background:
         linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
@@ -64,7 +81,7 @@
       background-size: 32px 32px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.5;
-      padding-top: var(--header-height);
+      padding-top: var(--header-height);   /* 给固定导航留出空间 */
     }
     a {
       color: inherit;
@@ -77,12 +94,15 @@
       background: none;
     }
 
+    /* 内容容器 – 控制最大宽度并居中 */
     .container {
       width: min(calc(100% - 32px), var(--container));
       margin: 0 auto;
     }
 
-    /* ===== Header ===== */
+    /* ============================================================
+       🧭 顶部导航 (Header)
+       ============================================================ */
     .site-header {
       position: fixed;
       top: 0;
@@ -90,13 +110,13 @@
       right: 0;
       z-index: 1000;
       height: var(--header-height);
-      background: color-mix(in srgb, var(--bg) 86%, transparent);
+      background: color-mix(in srgb, var(--bg) 86%, transparent);  /* 毛玻璃效果 */
       backdrop-filter: blur(14px);
       border-bottom: 1px solid transparent;
       transition: border-color .25s;
     }
     .site-header.scrolled {
-      border-color: var(--line);
+      border-color: var(--line);   /* 滚动后显示边框 */
     }
     .nav-wrap {
       height: 100%;
@@ -112,6 +132,7 @@
       font-size: 1.05rem;
       letter-spacing: -0.02em;
     }
+    /* 品牌标记 (ZK 方块) */
     .brand-mark {
       display: grid;
       place-items: center;
@@ -123,6 +144,8 @@
       font-size: 0.75rem;
       font-weight: 800;
     }
+
+    /* 导航链接 */
     .site-nav {
       margin-left: auto;
       display: flex;
@@ -136,6 +159,7 @@
       transition: color .2s;
       position: relative;
     }
+    /* 导航下划线动效 */
     .site-nav a::after {
       content: '';
       position: absolute;
@@ -154,6 +178,8 @@
     .site-nav a:hover::after {
       transform: scaleX(1);
     }
+
+    /* 右侧操作按钮组 */
     .nav-actions {
       display: flex;
       gap: 8px;
@@ -176,6 +202,7 @@
       border-color: var(--accent);
       background: var(--surface-soft);
     }
+    /* 移动端菜单按钮 (汉堡图标) – 默认隐藏 */
     .nav-toggle {
       display: none;
       padding: 8px;
@@ -191,7 +218,9 @@
       transition: .25s;
     }
 
-    /* ===== Typography ===== */
+    /* ============================================================
+       📝 排版工具类
+       ============================================================ */
     .eyebrow {
       display: block;
       color: var(--text-faint);
@@ -220,16 +249,19 @@
       font-size: 0.7rem;
     }
 
-    /* ===== Overview Section ===== */
+    /* ============================================================
+       📦 总览区域 (Overview Section)
+       ============================================================ */
     .overview-section {
       padding: 16px 0 20px;
     }
     .overview-grid {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 320px 1fr;   /* 左侧 320px 固定，右侧自适应 */
       gap: 16px;
     }
 
+    /* 卡片通用样式 */
     .profile-panel,
     .project-overview,
     .experience-strip,
@@ -242,7 +274,10 @@
       backdrop-filter: blur(4px);
     }
 
-    /* ===== Profile Panel ===== */
+    /* ============================================================
+       👤 个人信息面板 (左侧侧边栏)
+       如果要修改个人资料，在 HTML 中搜索 "profile-panel"
+       ============================================================ */
     .profile-panel {
       display: flex;
       flex-direction: column;
@@ -268,6 +303,7 @@
       line-height: 1.5;
     }
 
+    /* 信息条目 (位置、方向等) */
     .profile-facts {
       display: grid;
       gap: 6px;
@@ -311,6 +347,7 @@
       word-break: break-word;
     }
 
+    /* 操作按钮 */
     .profile-actions {
       display: flex;
       flex-direction: column;
@@ -347,7 +384,9 @@
       background: var(--surface-solid);
     }
 
-    /* ===== Project Overview – 卡片高度压缩 ===== */
+    /* ============================================================
+       📊 项目总览卡片区域 (右上)
+       ============================================================ */
     .project-overview {
       padding: 18px 22px 16px;
       display: flex;
@@ -355,13 +394,14 @@
     }
     .overview-cards {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
+      grid-template-columns: 1.2fr 1fr;   /* 左侧略宽 */
       gap: 10px;
       flex: 1;
-      max-height: 340px;
+      max-height: 340px;          /* 限制最大高度 */
       overflow: hidden;
     }
 
+    /* 项目卡片 */
     .project-card {
       display: flex;
       flex-direction: column;
@@ -384,6 +424,8 @@
     .project-card-main {
       justify-content: space-between;
     }
+
+    /* 卡片顶部 (编号 + 标签 + 日期) */
     .card-top {
       display: flex;
       justify-content: space-between;
@@ -404,6 +446,7 @@
       font-size: 0.7rem;
     }
 
+    /* ---- 标签样式 ---- */
     .tag {
       padding: 1px 7px;
       border-radius: 14px;
@@ -412,31 +455,14 @@
       letter-spacing: 0.02em;
       line-height: 1.6;
     }
-    .tag-green {
-      background: #dcfce7;
-      color: #166534;
-    }
-    .tag-blue {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-    .tag-purple {
-      background: #f3e8ff;
-      color: #6b21a8;
-    }
-    [data-theme="dark"] .tag-green {
-      background: rgba(22, 101, 52, 0.35);
-      color: #4ade80;
-    }
-    [data-theme="dark"] .tag-blue {
-      background: rgba(30, 64, 175, 0.35);
-      color: #60a5fa;
-    }
-    [data-theme="dark"] .tag-purple {
-      background: rgba(107, 33, 168, 0.35);
-      color: #c084fc;
-    }
+    .tag-green  { background: #dcfce7; color: #166534; }
+    .tag-blue   { background: #dbeafe; color: #1e40af; }
+    .tag-purple { background: #f3e8ff; color: #6b21a8; }
+    [data-theme="dark"] .tag-green  { background: rgba(22, 101, 52, 0.35); color: #4ade80; }
+    [data-theme="dark"] .tag-blue   { background: rgba(30, 64, 175, 0.35); color: #60a5fa; }
+    [data-theme="dark"] .tag-purple { background: rgba(107, 33, 168, 0.35); color: #c084fc; }
 
+    /* 卡片内容 */
     .card-content h3 {
       margin: 0 0 3px;
       font-size: 1.05rem;
@@ -460,6 +486,7 @@
       margin-bottom: 4px;
     }
 
+    /* 卡片底部标签 */
     .card-tags {
       display: flex;
       flex-wrap: wrap;
@@ -474,6 +501,7 @@
       font-weight: 500;
     }
 
+    /* 卡片统计数字 */
     .card-stats {
       display: flex;
       justify-content: space-between;
@@ -497,6 +525,7 @@
       color: var(--text-faint);
     }
 
+    /* ---- 右侧项目卡片堆叠区域 (可滚动) ---- */
     .project-card-stack {
       display: flex;
       flex-direction: column;
@@ -509,11 +538,11 @@
       flex-direction: column;
       gap: 6px;
       flex: 1;
-      overflow-y: auto;
+      overflow-y: auto;          /* 👈 这里是滚动关键 */
       min-height: 0;
       padding-right: 2px;
     }
-    /* 自定义滚动条 */
+    /* 自定义滚动条样式 */
     .scroll-wrap::-webkit-scrollbar {
       width: 3px;
     }
@@ -532,6 +561,8 @@
       padding: 8px 12px 6px;
       flex-shrink: 0;
     }
+
+    /* 滚动提示箭头 */
     .scroll-indicator {
       display: flex;
       justify-content: center;
@@ -548,15 +579,14 @@
       animation: scroll-hint 2s ease-in-out infinite;
     }
     @keyframes scroll-hint {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(3px);
-      }
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(3px); }
     }
 
-    /* ===== Experience Timeline – 独立卡片，修复偏移 ===== */
+    /* ============================================================
+       🕐 工作时间线 (Experience Timeline)
+       独立卡片，圆点 + 连线样式
+       ============================================================ */
     .experience-strip {
       margin-top: 14px;
       padding: 16px 22px 18px;
@@ -585,22 +615,26 @@
       letter-spacing: -0.02em;
     }
 
+    /* 时间线轨道 */
     .experience-track {
       display: flex;
       position: relative;
       gap: 12px;
-      padding-top: 24px;
+      padding-top: 24px;          /* 给圆点留空间 */
     }
+    /* 横向连线 */
     .experience-track::before {
       content: "";
       position: absolute;
-      top: 10px;
+      top: 10px;                  /* 连线垂直位置 */
       left: 0;
       right: 0;
       height: 2px;
       background: var(--line);
       border-radius: 2px;
     }
+
+    /* 时间线节点 */
     .experience-item {
       position: relative;
       flex: 1;
@@ -618,10 +652,11 @@
       transform: translateY(-2px);
       border-color: var(--accent);
     }
+    /* 圆点指示器 */
     .experience-item::before {
       content: "";
       position: absolute;
-      top: -14px;
+      top: -14px;                 /* 圆点位于卡片上方 */
       left: 16px;
       width: 8px;
       height: 8px;
@@ -630,6 +665,7 @@
       border: 2px solid var(--surface);
       box-shadow: 0 0 0 2px var(--line);
     }
+
     .exp-content .year {
       color: var(--accent);
       font-size: 0.65rem;
@@ -656,7 +692,10 @@
       margin-left: 6px;
     }
 
-    /* ===== Project Detail Section ===== */
+    /* ============================================================
+       📋 项目详情区 (Detail Cards)
+       支持上半部分背景图 + 渐变遮罩
+       ============================================================ */
     .project-detail-section,
     .skills-section {
       padding: 32px 0 40px;
@@ -681,7 +720,11 @@
       gap: 14px;
     }
 
-    /* 详情卡片 – 支持上半部分背景图 + 上至下渐变 */
+    /*
+      详情卡片 – 背景图 + 渐变遮罩
+      🖼️ 图片通过 CSS 变量 --detail-bg-image 设置
+      渐变从透明 → 卡片背景色，实现图片自然过渡
+    */
     .detail-card {
       display: flex;
       gap: 16px;
@@ -691,7 +734,12 @@
       cursor: default;
       position: relative;
       overflow: hidden;
-      /* 背景图层：渐变遮罩(上透明→下背景色) + 自定义图片 */
+      /*
+        背景图层：
+        1. 渐变遮罩 (上透明 → 下背景色)
+        2. 自定义图片 (从 CSS 变量读取)
+        3. 纯色兜底背景
+      */
       background:
         linear-gradient(to bottom,
           transparent 20%,
@@ -711,7 +759,7 @@
       padding-top: 2px;
       flex-shrink: 0;
       position: relative;
-      z-index: 1;
+      z-index: 1;   /* 保证文字在渐变上方 */
     }
     .detail-content {
       flex: 1;
@@ -747,6 +795,7 @@
       line-height: 1.5;
     }
 
+    /* 能力标签网格 */
     .capability-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -778,7 +827,9 @@
       line-height: 1.3;
     }
 
-    /* ===== Skills ===== */
+    /* ============================================================
+       🧩 能力矩阵区 (Skills Section)
+       ============================================================ */
     .skills-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -816,7 +867,9 @@
       line-height: 1.4;
     }
 
-    /* ===== Footer – 浏览量 ===== */
+    /* ============================================================
+       📄 页脚 (Footer) + 浏览量
+       ============================================================ */
     .site-footer {
       padding: 20px 0 18px;
       border-top: 1px solid var(--line);
@@ -857,7 +910,10 @@
       line-height: 1;
     }
 
-    /* ===== Animations ===== */
+    /* ============================================================
+       ✨ 动画效果
+       ============================================================ */
+    /* 悬停上浮 */
     .hover-lift {
       transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
     }
@@ -870,6 +926,7 @@
       transform: translateY(0);
     }
 
+    /* 滚动揭示动画 */
     .reveal {
       opacity: 0;
       transform: translateY(14px);
@@ -880,7 +937,9 @@
       transform: translateY(0);
     }
 
-    /* ===== Modal ===== */
+    /* ============================================================
+       🪟 弹窗 (Modal) – 点击项目卡片弹出详情
+       ============================================================ */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -977,28 +1036,36 @@
       color: var(--text);
     }
 
-    /* ===== Responsive ===== */
+    /* ============================================================
+       📱 响应式布局
+       断点说明：
+       - ≤1200px : 平板横屏，左右布局变为上下堆叠
+       - ≤820px  : 平板竖屏，导航折叠为汉堡菜单
+       - ≤480px  : 手机，进一步压缩间距
+       ============================================================ */
+
+    /* ---- 平板横屏 (≤1200px) ---- */
     @media (max-width: 1200px) {
       .overview-grid,
       .skills-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr;    /* 单列布局 */
       }
       .profile-panel {
         padding: 20px 20px 18px;
       }
       .overview-cards {
-        grid-template-columns: 1fr;
-        max-height: none;
+        grid-template-columns: 1fr;    /* 卡片也变为单列 */
+        max-height: none;              /* 移除高度限制 */
       }
       .project-card-stack {
         height: auto;
       }
       .scroll-wrap {
-        overflow-y: visible;
+        overflow-y: visible;           /* 移动端不需要滚动 */
         max-height: none;
       }
       .scroll-indicator {
-        display: none;
+        display: none;                 /* 隐藏滚动提示 */
       }
       .experience-strip {
         margin-top: 14px;
@@ -1014,10 +1081,12 @@
       }
     }
 
+    /* ---- 平板竖屏 (≤820px) ---- */
     @media (max-width: 820px) {
       .nav-wrap {
         gap: 16px;
       }
+      /* 导航菜单默认隐藏，点击汉堡按钮显示 */
       .site-nav {
         display: none;
         flex-direction: column;
@@ -1042,9 +1111,10 @@
         display: none;
       }
       .nav-toggle {
-        display: flex;
+        display: flex;                /* 显示汉堡按钮 */
       }
 
+      /* 时间线改为纵向 */
       .experience-track {
         flex-direction: column;
         padding-top: 0;
@@ -1056,18 +1126,18 @@
         bottom: 0;
         left: 6px;
         width: 2px;
-        height: auto;
+        height: auto;                /* 竖线 */
       }
       .experience-item::before {
         top: 50%;
         transform: translateY(-50%);
-        left: -19px;
+        left: -19px;                 /* 圆点移到左侧 */
       }
       .experience-item {
         padding: 10px 14px;
       }
       .exp-arrow {
-        display: none;
+        display: none;               /* 隐藏箭头 */
       }
 
       .capability-grid,
@@ -1096,29 +1166,9 @@
       .modal-title {
         font-size: 1.3rem;
       }
-      .overview-cards {
-        max-height: none;
-      }
-      .scroll-wrap {
-        overflow-y: visible;
-        max-height: none;
-      }
-      .scroll-indicator {
-        display: none;
-      }
-      .experience-strip {
-        margin-top: 14px;
-      }
-      .footer-inner {
-        flex-direction: column;
-        gap: 6px;
-        text-align: center;
-      }
-      .visitor-count {
-        font-size: 0.78rem;
-      }
     }
 
+    /* ---- 手机 (≤480px) ---- */
     @media (max-width: 480px) {
       .container {
         width: min(calc(100% - 12px), var(--container));
@@ -1163,35 +1213,34 @@
       .skill-card h3 {
         font-size: 0.95rem;
       }
-      .overview-cards {
-        max-height: none;
-      }
-      .scroll-wrap {
-        overflow-y: visible;
-        max-height: none;
-      }
-      .scroll-indicator {
-        display: none;
-      }
     }
   </style>
 </head>
 <body>
+  <!-- ============================================================
+       🧭 顶部导航栏
+       修改品牌名：搜索 "ZiKai Portfolio"
+       修改导航链接：在 <nav class="site-nav"> 中增删 <a> 标签
+       ============================================================ -->
   <header class="site-header" id="top">
     <div class="container nav-wrap">
+      <!-- 品牌标识 -->
       <a class="brand hover-lift" href="#top">
         <span class="brand-mark">ZK</span>
-        <span>ZiKai Portfolio</span>
+        <span>ZiKai Portfolio</span>   <!-- 👈 修改这里更换品牌名 -->
       </a>
 
+      <!-- 导航菜单 -->
       <nav class="site-nav">
         <a class="hover-lift" href="#overview">项目总览</a>
         <a class="hover-lift" href="#experience">工作经历</a>
         <a class="hover-lift" href="#projects">项目详情</a>
         <a class="hover-lift" href="#skills">能力矩阵</a>
         <a class="hover-lift" href="#overview">关于我</a>
+        <!-- 👆 增删导航项在这里 -->
       </nav>
 
+      <!-- 右侧按钮 -->
       <div class="nav-actions">
         <button class="theme-toggle hover-lift" type="button" aria-label="切换主题">◐</button>
         <button class="nav-toggle hover-lift" type="button" aria-label="打开导航" aria-expanded="false">
@@ -1202,21 +1251,36 @@
   </header>
 
   <main>
+    <!-- ============================================================
+       📦 第一部分：总览区域
+       包含：个人信息面板 + 项目总览卡片 + 工作时间线
+       ============================================================ -->
     <section class="overview-section" id="overview">
       <div class="container">
         <div class="overview-grid">
-          <!-- 侧边栏：关于我 -->
+
+          <!--
+            👤 左侧：个人信息面板
+            修改内容在这里搜索：
+            - 姓名："蒋子凯"
+            - 职位："Information System Implementation Engineer"
+            - 个人简介
+            - 信息条目 (位置/方向等)
+          -->
           <aside class="profile-panel reveal">
             <div class="profile-head">
               <span class="eyebrow">ABOUT ME</span>
-              <h1>蒋子凯</h1>
+              <h1>蒋子凯</h1>   <!-- 👈 修改姓名 -->
               <div class="profile-subtitle">Information System Implementation Engineer</div>
+              <!-- 👆 修改职位/副标题 -->
             </div>
 
             <p class="profile-intro">
               制造业信息化与流程管理从业者，专注系统实施、业务流程优化与项目落地。
+              <!-- 👆 修改个人简介 -->
             </p>
 
+            <!-- 信息条目列表 -->
             <div class="profile-facts">
               <div class="fact">
                 <div class="fact-icon">
@@ -1224,7 +1288,7 @@
                 </div>
                 <div class="fact-text">
                   <span>当前位置</span>
-                  <strong>Thailand</strong>
+                  <strong>Thailand</strong>   <!-- 👈 修改位置 -->
                 </div>
               </div>
               <div class="fact">
@@ -1233,7 +1297,7 @@
                 </div>
                 <div class="fact-text">
                   <span>核心方向</span>
-                  <strong>MES · APS · Oracle</strong>
+                  <strong>MES · APS · Oracle</strong>   <!-- 👈 修改核心方向 -->
                 </div>
               </div>
               <div class="fact">
@@ -1256,6 +1320,7 @@
               </div>
             </div>
 
+            <!-- 操作按钮 -->
             <div class="profile-actions">
               <a class="button button-primary hover-lift" href="#projects">
                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
@@ -1268,8 +1333,12 @@
             </div>
           </aside>
 
-          <!-- 右侧卡片：项目总览 + 时间线 -->
+          <!--
+            📊 右侧：项目总览 + 时间线
+          -->
           <div class="reveal" style="display:flex;flex-direction:column;gap:0;">
+
+            <!-- 项目总览卡片 -->
             <section class="project-overview">
               <div class="section-title-row">
                 <div class="title-wrap">
@@ -1280,6 +1349,10 @@
               </div>
 
               <div class="overview-cards">
+                <!--
+                  核心项目卡片 (左侧大卡片)
+                  data-project="mes" 对应弹窗数据，在 JS 中 projectData 对象里修改
+                -->
                 <article class="project-card project-card-main hover-lift" data-project="mes">
                   <div class="card-top">
                     <div class="card-top-left">
@@ -1311,8 +1384,10 @@
                   </div>
                 </article>
 
+                <!-- 右侧可滚动项目列表 -->
                 <div class="project-card-stack">
                   <div class="scroll-wrap">
+                    <!-- 项目 02 -->
                     <article class="project-card compact-card hover-lift" data-project="aps">
                       <div class="card-top">
                         <div class="card-top-left"><span>02</span><span class="tag tag-blue">海外项目</span></div>
@@ -1325,6 +1400,7 @@
                       <div class="card-tags"><span>APS</span><span>Planning</span></div>
                     </article>
 
+                    <!-- 项目 03 -->
                     <article class="project-card compact-card hover-lift" data-project="oracle">
                       <div class="card-top">
                         <div class="card-top-left"><span>03</span><span class="tag tag-purple">业务系统</span></div>
@@ -1337,6 +1413,7 @@
                       <div class="card-tags"><span>Oracle</span><span>EIP</span></div>
                     </article>
 
+                    <!-- 项目 04 -->
                     <article class="project-card compact-card hover-lift" data-project="portfolio">
                       <div class="card-top">
                         <div class="card-top-left"><span>04</span><span class="tag tag-green">个人项目</span></div>
@@ -1349,6 +1426,7 @@
                       <div class="card-tags"><span>HTML</span><span>CSS</span><span>JS</span><span>Design</span></div>
                     </article>
                   </div>
+                  <!-- 滚动提示 -->
                   <div class="scroll-indicator">
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     滚动查看更多
@@ -1357,7 +1435,10 @@
               </div>
             </section>
 
-            <!-- 时间线：独立卡片 -->
+            <!--
+              🕐 工作时间线
+              修改经历：在 experience-track 中增删 experience-item
+            -->
             <section class="experience-strip" id="experience">
               <div class="experience-label">
                 <span class="eyebrow">WORK EXPERIENCE TIMELINE</span>
@@ -1365,6 +1446,7 @@
               </div>
 
               <div class="experience-track">
+                <!-- 经历条目 1 -->
                 <article class="experience-item hover-lift">
                   <div class="exp-content">
                     <span class="year">2026</span>
@@ -1373,6 +1455,7 @@
                   </div>
                   <span class="exp-arrow">→</span>
                 </article>
+                <!-- 经历条目 2 -->
                 <article class="experience-item hover-lift">
                   <div class="exp-content">
                     <span class="year">2025</span>
@@ -1381,6 +1464,7 @@
                   </div>
                   <span class="exp-arrow">→</span>
                 </article>
+                <!-- 经历条目 3 -->
                 <article class="experience-item hover-lift">
                   <div class="exp-content">
                     <span class="year">2024</span>
@@ -1396,24 +1480,23 @@
       </div>
     </section>
 
-    <!-- 项目详情 -->
-    <!--
-      ===== 背景图片使用说明 =====
+    <!-- ============================================================
+       📋 第二部分：项目详情区
+      🖼️ 背景图片说明：
       图片存放路径：assets/icons/
-      每个 detail-card 通过内联样式 --detail-bg-image 设置背景图。
-      支持的图片格式：jpg / png / webp / svg
+      每个 detail-card 通过 style="--detail-bg-image: url(...)" 设置背景图。
       图片会自动显示在卡片上半部分，并通过渐变过渡到卡片背景色。
-      如果图片不存在或加载失败，卡片将回退为纯背景色，不影响阅读。
+      如果图片不存在或加载失败，卡片回退为纯背景色。
 
       推荐图片尺寸：宽度 ≥ 800px，高度 200-400px
-      替换方式：将你的图片放入 assets/icons/ 文件夹，
-      然后修改下方对应卡片的 url() 路径即可。
+      替换方式：将图片放入 assets/icons/ 文件夹，修改下方 url() 路径即可。
+      支持的格式：jpg / png / webp / svg
 
       示例：
       --detail-bg-image: url('assets/icons/mes-bg.jpg');
       --detail-bg-image: url('assets/icons/aps-bg.png');
       --detail-bg-image: url('assets/icons/oracle-bg.webp');
-    -->
+      ============================================================ -->
     <section class="project-detail-section" id="projects">
       <div class="container">
         <div class="section-heading reveal">
@@ -1425,7 +1508,10 @@
         </div>
 
         <div class="detail-list">
-          <!-- MES 项目 – 背景图：assets/icons/mes-bg.jpg -->
+          <!--
+            项目 01 – MES 系统实施
+            👇 修改背景图：将 assets/icons/mes-bg.jpg 替换为你的图片路径
+          -->
           <article class="detail-card reveal hover-lift"
             style="--detail-bg-image: url('assets/icons/mes-bg.jpg');">
             <div class="detail-index">01</div>
@@ -1433,12 +1519,13 @@
               <div class="detail-head">
                 <div>
                   <span class="tag tag-green">核心项目</span>
-                  <h3>制造业 MES 系统实施</h3>
+                  <h3>制造业 MES 系统实施</h3>   <!-- 👈 修改项目标题 -->
                 </div>
-                <span class="detail-date">2025–2026</span>
+                <span class="detail-date">2025–2026</span>   <!-- 👈 修改日期 -->
               </div>
               <p class="detail-summary">
                 面向制造现场推进业务流程系统化，覆盖需求梳理、测试验证、上线支持和异常闭环。
+                <!-- 👆 修改项目摘要 -->
               </p>
               <div class="capability-grid">
                 <div class="capability hover-lift">
@@ -1457,7 +1544,10 @@
             </div>
           </article>
 
-          <!-- APS 项目 – 背景图：assets/icons/aps-bg.jpg -->
+          <!--
+            项目 02 – 泰国 APS
+            👇 修改背景图：将 assets/icons/aps-bg.jpg 替换为你的图片路径
+          -->
           <article class="detail-card reveal hover-lift"
             style="--detail-bg-image: url('assets/icons/aps-bg.jpg');">
             <div class="detail-index">02</div>
@@ -1489,7 +1579,10 @@
             </div>
           </article>
 
-          <!-- Oracle 项目 – 背景图：assets/icons/oracle-bg.jpg -->
+          <!--
+            项目 03 – Oracle / EIP
+            👇 修改背景图：将 assets/icons/oracle-bg.jpg 替换为你的图片路径
+          -->
           <article class="detail-card reveal hover-lift"
             style="--detail-bg-image: url('assets/icons/oracle-bg.jpg');">
             <div class="detail-index">03</div>
@@ -1524,7 +1617,10 @@
       </div>
     </section>
 
-    <!-- 能力矩阵 -->
+    <!-- ============================================================
+       🧩 第三部分：能力矩阵
+       修改技能：在 skills-grid 中增删 skill-card
+       ============================================================ -->
     <section class="skills-section" id="skills">
       <div class="container skills-layout">
         <div class="section-heading reveal" style="flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:0;">
@@ -1535,34 +1631,45 @@
         </div>
 
         <div class="skills-grid reveal">
+          <!-- 技能 01 -->
           <article class="skill-card hover-lift">
             <span>01</span>
             <h3>项目实施</h3>
             <p>需求调研、方案沟通、测试、上线支持、问题闭环。</p>
           </article>
+          <!-- 技能 02 -->
           <article class="skill-card hover-lift">
             <span>02</span>
             <h3>业务流程</h3>
             <p>流程梳理、业务规则、角色职责、异常路径分析。</p>
           </article>
+          <!-- 技能 03 -->
           <article class="skill-card hover-lift">
             <span>03</span>
             <h3>制造系统</h3>
             <p>MES、APS、Oracle、EIP、AGV、WMS。</p>
           </article>
+          <!-- 技能 04 -->
           <article class="skill-card hover-lift">
             <span>04</span>
             <h3>技术工具</h3>
             <p>SQL、Python、HTML、CSS、JavaScript、Git。</p>
           </article>
+          <!-- 👆 增删技能卡片在这里 -->
         </div>
       </div>
     </section>
   </main>
 
+  <!-- ============================================================
+     📄 页脚
+     修改版权信息：搜索 "© 2026 ZiKai"
+     浏览量通过 CountAPI 自动获取，无需手动修改
+     ============================================================ -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <span>© 2026 ZiKai</span>
+      <span>© 2026 ZiKai</span>   <!-- 👈 修改版权 -->
+      <!-- 浏览量显示区域 -->
       <span class="visitor-count">
         <span class="count-icon">👁️</span>
         <span>浏览量: </span>
@@ -1572,7 +1679,10 @@
     </div>
   </footer>
 
-  <!-- 项目详情弹窗 -->
+  <!-- ============================================================
+     🪟 项目详情弹窗 (Modal)
+     点击项目卡片时由 JS 动态填充内容
+     ============================================================ -->
   <div class="modal-overlay" id="project-modal">
     <div class="modal-content">
       <button class="modal-close" aria-label="关闭">&times;</button>
@@ -1580,40 +1690,56 @@
         <h3 class="modal-title" id="modal-title">项目名称</h3>
         <div class="modal-meta" id="modal-meta">2025 - 2026</div>
       </div>
-      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-body" id="modal-body">
+        <!-- 弹窗内容由 JS 动态生成 -->
+      </div>
     </div>
   </div>
 
+  <!-- ============================================================
+     📜 JavaScript 逻辑
+     包含：主题切换、移动端导航、滚动效果、浏览量统计、弹窗交互
+     ============================================================ -->
   <script>
     (() => {
-      // ===== Theme =====
+      // ======================================================
+      // 🌓 主题切换 (深色/浅色模式)
+      // 通过修改 <html> 的 data-theme 属性切换
+      // 偏好保存在 localStorage 中
+      // ======================================================
       const root = document.documentElement;
       const themeToggle = document.querySelector('.theme-toggle');
       const navToggle = document.querySelector('.nav-toggle');
       const nav = document.querySelector('.site-nav');
       const header = document.querySelector('.site-header');
 
+      // 读取保存的主题，默认跟随系统偏好
       const saved = localStorage.getItem('portfolio-theme-v5');
       const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
       root.dataset.theme = saved || (prefersDark ? 'dark' : 'light');
 
+      // 同步按钮图标
       const syncTheme = () => {
         if (themeToggle) themeToggle.textContent = root.dataset.theme === 'dark' ? '☀' : '◐';
       };
       syncTheme();
 
+      // 点击切换主题
       themeToggle?.addEventListener('click', () => {
         root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         localStorage.setItem('portfolio-theme-v5', root.dataset.theme);
         syncTheme();
       });
 
-      // ===== Mobile Nav =====
+      // ======================================================
+      // 📱 移动端导航 (汉堡菜单)
+      // ======================================================
       navToggle?.addEventListener('click', () => {
         const open = nav.classList.toggle('open');
         navToggle.setAttribute('aria-expanded', String(open));
       });
 
+      // 点击导航链接后自动关闭菜单
       document.querySelectorAll('.site-nav a').forEach(link => {
         link.addEventListener('click', () => {
           nav.classList.remove('open');
@@ -1621,12 +1747,17 @@
         });
       });
 
-      // ===== Scroll header =====
+      // ======================================================
+      // 📜 滚动时给导航加边框阴影
+      // ======================================================
       addEventListener('scroll', () => {
         header?.classList.toggle('scrolled', scrollY > 6);
       }, { passive: true });
 
-      // ===== Reveal =====
+      // ======================================================
+      // ✨ 滚动揭示动画 (Intersection Observer)
+      // 带有 .reveal 类的元素在进入视口时渐显
+      // ======================================================
       const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -1637,16 +1768,22 @@
       }, { threshold: .1 });
 
       document.querySelectorAll('.reveal').forEach((element, index) => {
+        // 错开动画延迟，产生依次出现的效果
         element.style.transitionDelay = `${Math.min(index % 3, 2) * 30}ms`;
         observer.observe(element);
       });
 
-      // ===== 浏览量计数 (CountAPI) =====
+      // ======================================================
+      // 👁️ 浏览量统计 (使用 CountAPI)
+      // 如果不需要可以删除此段代码
+      // API: https://api.countapi.xyz/hit/zk-portfolio/visits
+      // 命名空间 "zk-portfolio"，键 "visits" 可自行修改
+      // ======================================================
       const visitCountEl = document.getElementById('visit-count');
 
       const fetchVisitCount = () => {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4秒超时
 
         fetch('https://api.countapi.xyz/hit/zk-portfolio/visits', {
             signal: controller.signal
@@ -1663,21 +1800,28 @@
             }
           })
           .catch(() => {
-            visitCountEl.textContent = '--';
+            visitCountEl.textContent = '--';   // 加载失败显示 --
           })
           .finally(() => {
             clearTimeout(timeoutId);
           });
       };
 
+      // 页面加载完成后获取浏览量
       if (document.readyState === 'complete') {
         fetchVisitCount();
       } else {
         window.addEventListener('load', fetchVisitCount);
       }
 
-      // ===== Project Data =====
+      // ======================================================
+      // 📦 项目弹窗数据
+      // 🔑 关键修改区域：在这里编辑每个项目的弹窗内容
+      // data-project 属性值与这里的 key 对应
+      // 支持 HTML 标签
+      // ======================================================
       const projectData = {
+        // MES 项目弹窗内容
         mes: {
           title: "制造业 MES 系统实施",
           meta: "2025–2026 | 核心项目",
@@ -1694,6 +1838,7 @@
             <p>完成 12+ 核心模块的落地，生产效率提升 30%，实现 100% 的平稳上线支持。</p>
           `
         },
+        // APS 项目弹窗内容
         aps: {
           title: "泰国 APS 项目",
           meta: "2026 | 海外项目",
@@ -1710,6 +1855,7 @@
             <p>成功完成 APS 系统在泰国工厂的试点上线，计划准确率提升 22%，为后续全面推广奠定基础。</p>
           `
         },
+        // Oracle 项目弹窗内容
         oracle: {
           title: "Oracle / EIP 流程支持",
           meta: "2025–2026 | 业务系统",
@@ -1726,6 +1872,7 @@
             <p>完成 8 个核心业务流程的梳理与优化，跨部门协作效率提升 25%。</p>
           `
         },
+        // Portfolio 项目弹窗内容
         portfolio: {
           title: "Portfolio V5",
           meta: "2026 | 个人项目",
@@ -1742,17 +1889,22 @@
             <p>通过本次个人项目的设计与开发，进一步提升了前端工程化与 UI/UX 设计能力。</p>
           `
         }
+        // 👆 在这里新增项目弹窗数据
       };
 
-      // ===== Modal =====
+      // ======================================================
+      // 🪟 弹窗交互逻辑
+      // ======================================================
       const modal = document.getElementById('project-modal');
       const modalClose = document.querySelector('.modal-close');
       const modalTitle = document.getElementById('modal-title');
       const modalMeta = document.getElementById('modal-meta');
       const modalBody = document.getElementById('modal-body');
 
+      // 为所有带 data-project 属性的项目卡片绑定点击事件
       document.querySelectorAll('.project-card[data-project]').forEach(card => {
         card.addEventListener('click', function(e) {
+          // 排除点击了内部链接或按钮的情况
           if (e.target.closest('a') || e.target.closest('button')) return;
           const id = this.getAttribute('data-project');
           const data = projectData[id];
@@ -1761,24 +1913,28 @@
             modalMeta.textContent = data.meta;
             modalBody.innerHTML = data.content;
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';   // 禁止背景滚动
           }
         });
       });
 
+      // 关闭弹窗
       const closeModal = () => {
         modal.classList.remove('active');
-        document.body.style.overflow = '';
+        document.body.style.overflow = '';   // 恢复背景滚动
       };
 
       modalClose?.addEventListener('click', closeModal);
+      // 点击遮罩层关闭
       modal?.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
       });
+      // ESC 键关闭
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeModal();
       });
 
+      // 阻止弹窗内部滚动冒泡到背景
       modal?.querySelector('.modal-content')?.addEventListener('wheel', (e) => {
         e.stopPropagation();
       }, { passive: true });
