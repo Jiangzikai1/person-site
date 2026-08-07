@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f8fafc" />
   <meta name="description" content="蒋子凯的项目与能力作品集，展示制造业数字化、系统实施与流程管理经验。" />
-  <title>蒋子凯｜项目与能力作品集</title>
+  <title>蒋子凯｜项目博客</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Crect width='24' height='24' rx='6'/%3E%3Ctext x='6' y='18' font-size='16' font-weight='700' fill='white' font-family='system-ui'%3EZK%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
   <style>
-    /* ===== V5 Styles – 卡片高度优化版 ===== */
+    /* ===== V5 Styles – 卡片高度优化 + 底部浏览量 ===== */
     :root {
       --bg: #f8fafc;
       --surface: rgba(255, 255, 255, 0.92);
@@ -358,7 +358,6 @@
       grid-template-columns: 1.2fr 1fr;
       gap: 10px;
       flex: 1;
-      /* 限制高度，让时间线露出一半 */
       max-height: 340px;
       overflow: hidden;
     }
@@ -405,7 +404,6 @@
       font-size: 0.7rem;
     }
 
-    /* Tags – 更紧凑 */
     .tag {
       padding: 1px 7px;
       border-radius: 14px;
@@ -534,14 +532,11 @@
       border: 1px solid var(--line);
       border-top: none;
       border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-      /* 让它与 project-overview 视觉上连在一起，但单独控制 */
       position: relative;
-      /* 稍微上移，与卡片区域重叠，产生"露出一半"的效果 */
       margin-top: -12px;
       padding-top: 18px;
       z-index: 1;
     }
-    /* 让时间线区域有独立的背景，但保持与上方卡片区域视觉连续 */
     .experience-strip::before {
       content: '';
       position: absolute;
@@ -782,21 +777,45 @@
       line-height: 1.4;
     }
 
-    /* ===== Footer ===== */
+    /* ===== Footer – 新增浏览量 ===== */
     .site-footer {
-      padding: 22px 0;
+      padding: 20px 0 18px;
       border-top: 1px solid var(--line);
-      margin-top: 16px;
+      margin-top: 12px;
     }
     .footer-inner {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       color: var(--text-faint);
       font-size: 0.8rem;
       font-weight: 500;
+      flex-wrap: wrap;
+      gap: 8px 16px;
     }
     .footer-inner a:hover {
       color: var(--accent-dark);
+    }
+    .visitor-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+    .visitor-count #visit-count {
+      font-weight: 700;
+      color: var(--accent-dark);
+      min-width: 2em;
+      text-align: center;
+      transition: color .3s;
+    }
+    [data-theme="dark"] .visitor-count #visit-count {
+      color: var(--accent);
+    }
+    .visitor-count .count-icon {
+      font-size: 0.9rem;
+      line-height: 1;
     }
 
     /* ===== Animations ===== */
@@ -1038,6 +1057,14 @@
         border-top: 1px solid var(--line);
         border-radius: var(--radius-xl);
       }
+      .footer-inner {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+      }
+      .visitor-count {
+        font-size: 0.78rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1274,7 +1301,7 @@
               </div>
             </section>
 
-            <!-- 时间线：露出一半（通过负 margin-top 与上方卡片区域重叠） -->
+            <!-- 时间线：露出一半 -->
             <section class="experience-strip" id="experience">
               <div class="experience-label">
                 <span class="eyebrow">WORK EXPERIENCE TIMELINE</span>
@@ -1457,6 +1484,11 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <span>© 2026 ZiKai</span>
+      <span class="visitor-count">
+        <span class="count-icon">👁️</span>
+        <span>浏览量: </span>
+        <span id="visit-count">加载中...</span>
+      </span>
       <a class="hover-lift" href="#top">返回顶部 ↑</a>
     </div>
   </footer>
@@ -1529,6 +1561,42 @@
         element.style.transitionDelay = `${Math.min(index % 3, 2) * 30}ms`;
         observer.observe(element);
       });
+
+      // ===== 浏览量计数 (CountAPI) =====
+      const visitCountEl = document.getElementById('visit-count');
+
+      const fetchVisitCount = () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+        fetch('https://api.countapi.xyz/hit/zk-portfolio/visits', {
+            signal: controller.signal
+          })
+          .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+          })
+          .then(data => {
+            if (data && typeof data.value === 'number') {
+              visitCountEl.textContent = data.value;
+            } else {
+              throw new Error('Invalid response');
+            }
+          })
+          .catch(() => {
+            visitCountEl.textContent = '--';
+          })
+          .finally(() => {
+            clearTimeout(timeoutId);
+          });
+      };
+
+      // 页面加载完成后获取浏览量
+      if (document.readyState === 'complete') {
+        fetchVisitCount();
+      } else {
+        window.addEventListener('load', fetchVisitCount);
+      }
 
       // ===== Project Data =====
       const projectData = {
