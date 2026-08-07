@@ -112,7 +112,7 @@
             </div>
 
             <div class="overview-cards">
-              <article class="project-card project-card-main hover-lift">
+              <article class="project-card project-card-main hover-lift" data-project="mes">
                 <div class="card-top">
                   <div class="card-top-left">
                     <span>01</span>
@@ -147,7 +147,7 @@
 
               <div class="project-card-stack">
                 <div class="scroll-wrap">
-                  <article class="project-card compact-card hover-lift">
+                  <article class="project-card compact-card hover-lift"> data-project="aps"
                     <div class="card-top">
                       <div class="card-top-left"><span>02</span><span class="tag tag-blue">海外项目</span></div>
                       <span>2026</span>
@@ -159,7 +159,7 @@
                     <div class="card-tags"><span>APS</span><span>Planning</span></div>
                   </article>
 
-                  <article class="project-card compact-card hover-lift">
+                  <article class="project-card compact-card hover-lift"> data-project="oracle"
                     <div class="card-top">
                       <div class="card-top-left"><span>03</span><span class="tag tag-purple">业务系统</span></div>
                       <span>2025–2026</span>
@@ -171,7 +171,7 @@
                     <div class="card-tags"><span>Oracle</span><span>EIP</span></div>
                   </article>
 
-                  <article class="project-card compact-card hover-lift">
+                  <article class="project-card compact-card hover-lift"> data-project="portfolio"
                     <div class="card-top">
                       <div class="card-top-left"><span>04</span><span class="tag tag-green">个人项目</span></div>
                       <span>2026</span>
@@ -375,6 +375,20 @@
       <a class="hover-lift" href="#top">返回顶部 ↑</a>
     </div>
   </footer>
+
+
+  <!-- 项目详情弹窗 -->
+  <div class="modal-overlay" id="project-modal">
+    <div class="modal-content">
+      <button class="modal-close" aria-label="关闭">&times;</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">项目名称</h3>
+        <div class="modal-meta" id="modal-meta">2025 - 2026</div>
+      </div>
+      <div class="modal-body" id="modal-body">
+      </div>
+    </div>
+  </div>
 
   <script src="js/main.js"></script>
 </body>
