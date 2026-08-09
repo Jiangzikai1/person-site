@@ -3821,3 +3821,152 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
         font-size: .52rem !important;
     }
 }
+
+/* v39 · 手机端项目总览：固定为“编号 + 品牌 + 时间 / 项目名 / Tag”三层结构 */
+@media (max-width: 768px) {
+    .overview-cards {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+        column-gap: 12px !important;
+        row-gap: 0 !important;
+    }
+
+    .project-overview-row,
+    .project-overview-row:first-child {
+        position: relative !important;
+        display: grid !important;
+        grid-template-columns: 20px minmax(0, 1fr) !important;
+        grid-template-rows: auto !important;
+        column-gap: 6px !important;
+        min-height: 92px !important;
+        height: 92px !important;
+        padding: 10px 7px !important;
+        align-items: start !important;
+        overflow: hidden !important;
+    }
+
+    .project-overview-row .overview-row-index {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        padding-top: 2px !important;
+        font-size: .62rem !important;
+        line-height: 1 !important;
+    }
+
+    .project-overview-row .overview-row-main {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        display: block !important;
+        overflow: hidden !important;
+    }
+
+    .project-overview-row .overview-row-title {
+        display: block !important;
+        min-width: 0 !important;
+    }
+
+    .project-overview-row .overview-row-topline {
+        height: 17px !important;
+        min-height: 17px !important;
+        display: flex !important;
+        align-items: center !important;
+        min-width: 0 !important;
+    }
+
+    .project-overview-row .overview-row-brand {
+        display: inline-flex !important;
+        align-items: center !important;
+        min-width: 0 !important;
+        height: 17px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    .project-overview-row .overview-row-brand .megmeet_logo {
+        font-size: .82rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    .project-overview-row .overview-row-title h3 {
+        display: block !important;
+        height: 20px !important;
+        min-height: 20px !important;
+        max-height: 20px !important;
+        margin: 1px 0 0 !important;
+        font-size: .78rem !important;
+        line-height: 20px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        word-break: normal !important;
+    }
+
+    .project-overview-row .overview-row-tags {
+        display: flex !important;
+        width: 100% !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        margin: 3px 0 0 !important;
+        gap: 4px !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+    }
+
+    .project-overview-row .overview-row-tags .tag {
+        flex: 0 0 auto !important;
+        max-width: 100% !important;
+        padding: 2px 5px !important;
+        font-size: .52rem !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+    }
+
+    .project-overview-row .overview-row-main p {
+        display: none !important;
+    }
+
+    .project-overview-row .overview-row-meta {
+        position: absolute !important;
+        top: 11px !important;
+        right: 7px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 4px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        font-size: .52rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    .project-overview-row .overview-row-meta > span:first-child {
+        max-width: 58px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .project-overview-row .overview-row-arrow {
+        font-size: .75rem !important;
+        line-height: 1 !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .overview-cards { column-gap: 9px !important; }
+    .project-overview-row,
+    .project-overview-row:first-child {
+        grid-template-columns: 18px minmax(0, 1fr) !important;
+        column-gap: 5px !important;
+        min-height: 88px !important;
+        height: 88px !important;
+        padding: 9px 6px !important;
+    }
+    .project-overview-row .overview-row-brand .megmeet_logo { font-size: .76rem !important; }
+    .project-overview-row .overview-row-title h3 { font-size: .74rem !important; }
+    .project-overview-row .overview-row-meta { right: 6px !important; }
+}

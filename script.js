@@ -235,6 +235,13 @@ const visitCountEl = document.getElementById('visit-count');
             const date = escapeText(dateEl?.textContent);
             const summary = escapeText(summaryEl?.textContent);
             const tags = tagEls.slice(0, 2).map(el => el.outerHTML).join('');
+            const brandEl = titleEl?.querySelector('.megmeet_logo');
+            const brand = brandEl ? brandEl.outerHTML : '';
+            const mobileName = titleEl
+                ? titleEl.cloneNode(true)
+                : null;
+            if (mobileName && brandEl) mobileName.querySelector('.megmeet_logo')?.remove();
+            const mobileProjectName = mobileName ? mobileName.textContent.trim() : title.replace(/<[^>]*>/g, '').trim();
 
             const card = document.createElement('article');
             card.className = 'project-card project-overview-row hover-lift';
@@ -245,7 +252,10 @@ const visitCountEl = document.getElementById('visit-count');
                 <span class="overview-row-index">${String(index + 1).padStart(2, '0')}</span>
                 <div class="overview-row-main">
                     <div class="overview-row-title">
-                        <h3>${title}</h3>
+                        <div class="overview-row-topline">
+                            ${brand ? `<span class="overview-row-brand">${brand}</span>` : ''}
+                        </div>
+                        <h3>${brand ? mobileProjectName : title}</h3>
                         <div class="overview-row-tags">${tags}</div>
                     </div>
                     <p>${summary}</p>
