@@ -221,101 +221,62 @@ const visitCountEl = document.getElementById('visit-count');
     const buildOverview = () => {
         if (!overviewCards || !detailCards.length) return;
 
+        /* HR 首页只保留“快速识别”信息：
+           编号 + 项目名称 + 一句话结果/场景 + 时间。
+           点击这里先跳到对应项目详情行；详情行再负责打开弹窗。 */
         const cards = detailCards.map((detailCard, index) => {
             const id = detailCard.dataset.project;
             const titleEl = detailCard.querySelector('.detail-head h3');
-            const tagEl = detailCard.querySelector('.detail-head .tag');
             const dateEl = detailCard.querySelector('.detail-date');
             const summaryEl = detailCard.querySelector('.detail-summary');
-            const capabilityEls = [...detailCard.querySelectorAll('.capability')];
+            const tagEls = [...detailCard.querySelectorAll('.detail-head .tag')];
 
-            // 保留标题里的 .megmeet_logo，项目总览卡片才能与品牌标准保持一致。
             const title = titleEl ? titleEl.innerHTML.trim() : '未命名项目';
-            const tag = tagEl ? tagEl.outerHTML : '';
-            const date = dateEl ? escapeText(dateEl.textContent) : '';
-            const summary = summaryEl ? escapeText(summaryEl.textContent) : '';
-            const capabilities = capabilityEls.map(el => ({
-                label: escapeText(el.querySelector('span')?.textContent),
-                value: escapeText(el.querySelector('strong')?.textContent)
-            })).filter(item => item.value);
-
-            /* HR 首页只需要先回答三件事：做过什么、负责什么、为什么值得点进去。 */
-            const responsibility = capabilities.find(item => /职责|工作|核心工作/i.test(item.label))?.value || capabilities[0]?.value || '';
-            const scene = capabilities.find(item => /场景|环境|范围/i.test(item.label))?.value || capabilities[1]?.value || '';
-            const valueLine = [responsibility, scene].filter(Boolean).join(' · ');
-            const techTags = scene
-                .split(/[·｜|]/)
-                .map(s => s.trim())
-                .filter(Boolean)
-                .slice(0, 3);
+            const date = escapeText(dateEl?.textContent);
+            const summary = escapeText(summaryEl?.textContent);
+            const tags = tagEls.slice(0, 2).map(el => el.outerHTML).join('');
 
             const card = document.createElement('article');
-            card.className = `project-card ${index === 0 ? 'project-card-main' : 'compact-card'} hover-lift`;
+            card.className = 'project-card project-overview-row hover-lift';
             card.dataset.project = id;
-
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
             card.innerHTML = `
-                <div class="card-top">
-                    <div class="card-top-left">
-                        <span>${String(index + 1).padStart(2, '0')}</span>
-                        ${tag}
+                <span class="overview-row-index">${String(index + 1).padStart(2, '0')}</span>
+                <div class="overview-row-main">
+                    <div class="overview-row-title">
+                        <h3>${title}</h3>
+                        <div class="overview-row-tags">${tags}</div>
                     </div>
-                    <span>${date}</span>
-                </div>
-                <div class="card-content">
-                    <h3>${title}</h3>
                     <p>${summary}</p>
-                    <div class="overview-value-line">${valueLine}</div>
-                    <div class="card-tags">
-                        ${techTags.map(tag => `<span>${tag}</span>`).join('')}
-                    </div>
                 </div>
-                ${index === 0 ? `
-                <div class="overview-cta">
-                    <span>查看完整项目拆解</span>
-                    <span>→</span>
-                </div>` : ''}
+                <div class="overview-row-meta">
+                    <span>${date}</span>
+                    <span class="overview-row-arrow">↓</span>
+                </div>
             `;
+
+            const jumpToDetail = () => {
+                const target = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(id)}"]`);
+                if (!target) return;
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.classList.add('detail-card-focus');
+                window.setTimeout(() => target.classList.remove('detail-card-focus'), 1200);
+            };
+            card.addEventListener('click', jumpToDetail);
+            card.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    jumpToDetail();
+                }
+            });
             return card;
         });
 
         overviewCards.innerHTML = '';
-        if (!cards.length) return;
-
-        overviewCards.appendChild(cards[0]);
-        if (cards.length > 1) {
-            const stack = document.createElement('div');
-            stack.className = 'project-card-stack';
-            const scrollWrap = document.createElement('div');
-            scrollWrap.className = 'scroll-wrap';
-            cards.slice(1).forEach(card => scrollWrap.appendChild(card));
-            stack.appendChild(scrollWrap);
-            overviewCards.appendChild(stack);
-        }
+        cards.forEach(card => overviewCards.appendChild(card));
     };
     buildOverview();
-
-    // V28：右侧滚动区的高度只读取左侧核心项目卡片。
-    // 这样右侧不会因为内部项目数量把「项目总览」整体撑长，同时滚动条仍然保留。
-    const syncOverviewStackHeight = () => {
-        if (!overviewCards) return;
-        const mainCard = overviewCards.querySelector('.project-card-main');
-        const stack = overviewCards.querySelector('.project-card-stack');
-        if (!mainCard || !stack || window.innerWidth <= 768) {
-            stack?.style.removeProperty('--overview-stack-height');
-            return;
-        }
-        const height = Math.max(270, Math.round(mainCard.getBoundingClientRect().height));
-        stack.style.setProperty('--overview-stack-height', `${height}px`);
-    };
-
-    syncOverviewStackHeight();
-    if (window.ResizeObserver) {
-        const mainCard = overviewCards?.querySelector('.project-card-main');
-        if (mainCard) {
-            new ResizeObserver(syncOverviewStackHeight).observe(mainCard);
-        }
-    }
-    addEventListener('resize', syncOverviewStackHeight, { passive: true });
 
     // V25：右侧小滚动区使用浏览器原生滚动链。
     // 不再在 touchmove / wheel 中逐帧调用 window.scrollTo，避免手机端主线程抖动；
@@ -423,17 +384,12 @@ const visitCountEl = document.getElementById('visit-count');
     };
 
     const bindProjectCardEvents = () => {
-        document.querySelectorAll('.project-card[data-project], #projects .detail-card[data-project]').forEach(card => {
+        document.querySelectorAll('#projects .detail-card[data-project]').forEach(card => {
             if (card.dataset.modalBound === 'true') return;
             card.dataset.modalBound = 'true';
             card.addEventListener('click', function(e) {
                 if (e.target.closest('a') || e.target.closest('button')) return;
-                if (this.classList.contains('project-card')) {
-                    const target = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(this.dataset.project)}"]`);
-                    if (target) openModalFromCard(target);
-                } else {
-                    openModalFromCard(this);
-                }
+                openModalFromCard(this);
             });
         });
     };

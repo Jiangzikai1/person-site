@@ -751,55 +751,45 @@ button {
     isolation: isolate;
     background: var(--surface-solid);
 }
-.detail-card::before {
+ .detail-card::before {
     content: "";
     position: absolute;
     inset: 0;
     z-index: -2;
     background-image: var(--detail-bg-image, none);
     background-position: right center;
-    /* 按图片宽度约束，保持 4:3 / 16:9 原始比例，避免 cover 带来的裁切 */
-    background-size: min(44%, 560px) auto;
+    background-size: min(46%, 590px) auto;
     background-repeat: no-repeat;
     transform: scale(1.005);
-    opacity: .86;
+    opacity: .92;
     transition: transform .5s ease, opacity .5s ease;
+    /* 左端透明，避免图片出现硬切边 */
+    mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 7%, rgba(0,0,0,.68) 22%, #000 38%, #000 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.18) 7%, rgba(0,0,0,.68) 22%, #000 38%, #000 100%);
 }
 .detail-card::after {
     content: "";
     position: absolute;
     inset: 0;
     z-index: -1;
-    background:
-        linear-gradient(90deg,
-            color-mix(in srgb, var(--surface-solid) 96%, transparent) 0%,
-            color-mix(in srgb, var(--surface-solid) 90%, transparent) 38%,
-            color-mix(in srgb, var(--surface-solid) 70%, transparent) 68%,
-            color-mix(in srgb, var(--surface-solid) 34%, transparent) 100%),
-        linear-gradient(180deg,
-            rgba(255,255,255,.04) 0%,
-            color-mix(in srgb, var(--surface-solid) 72%, transparent) 74%,
-            color-mix(in srgb, var(--surface-solid) 90%, transparent) 100%);
     pointer-events: none;
-}
-.detail-card:hover::before {
-    transform: scale(1.035);
-    transition: transform .5s ease;
-}
-
-[data-theme="dark"] .detail-card::after {
     background:
         linear-gradient(90deg,
-            rgba(15,23,42,.94) 0%,
-            rgba(15,23,42,.86) 38%,
-            rgba(15,23,42,.66) 68%,
-            rgba(15,23,42,.34) 100%),
+            color-mix(in srgb, var(--surface-solid) 100%, transparent) 0%,
+            color-mix(in srgb, var(--surface-solid) 96%, transparent) 15%,
+            color-mix(in srgb, var(--surface-solid) 74%, transparent) 35%,
+            color-mix(in srgb, var(--surface-solid) 28%, transparent) 61%,
+            transparent 88%),
         linear-gradient(180deg,
-            rgba(15,23,42,.06) 0%,
-            rgba(15,23,42,.66) 76%,
-            rgba(15,23,42,.90) 100%);
+            rgba(255,255,255,.02) 0%,
+            color-mix(in srgb, var(--surface-solid) 68%, transparent) 82%,
+            color-mix(in srgb, var(--surface-solid) 92%, transparent) 100%);
+    /* 模糊只逐步作用于左侧，右侧图片保持清晰 */
+    backdrop-filter: blur(13px);
+    -webkit-backdrop-filter: blur(13px);
+    mask-image: linear-gradient(90deg, #000 0%, #000 28%, rgba(0,0,0,.72) 48%, rgba(0,0,0,.2) 70%, transparent 88%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 28%, rgba(0,0,0,.72) 48%, rgba(0,0,0,.2) 70%, transparent 88%);
 }
-
 .detail-card:hover {
     border-color: var(--accent);
     transform: translateY(-1px);
@@ -808,7 +798,7 @@ button {
     font-size: 1.2rem;
     font-weight: 800;
     color: var(--text-faint);
-    padding-top: 4px;
+    padding-top: 1px;
     flex-shrink: 0;
     position: relative;
     z-index: 1;
@@ -870,6 +860,21 @@ button {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
+}
+.detail-view-hint {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    color: var(--text-faint);
+    font-size: .68rem;
+    line-height: 1.3;
+    letter-spacing: .04em;
+    pointer-events: none;
+    transition: color .2s ease, transform .2s ease;
+}
+.detail-card:hover .detail-view-hint {
+    color: var(--accent);
+    transform: translateY(-1px);
 }
 .capability strong {
     display: block;
@@ -2633,5 +2638,755 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
     .overview-cards > .project-card-stack .scroll-wrap {
         height: auto;
         max-height: none;
+    }
+}
+
+
+/* ============================================================
+   V29 · HR 首屏重构：少而有力的数据先说话
+   ============================================================ */
+.hr-snapshot {
+    margin: 24px 0 18px;
+    padding: 15px 0 16px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+.hr-snapshot-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 13px;
+}
+.hr-snapshot-head .eyebrow { margin-bottom: 3px; font-size: .62rem; }
+.hr-snapshot-head > div > strong {
+    display: block; color: var(--accent-dark); font-size: .88rem; line-height: 1.25;
+}
+.hr-snapshot-note { color: var(--text-faint); font-size: .62rem; white-space: nowrap; }
+.hr-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.hr-metric {
+    min-width: 0; padding: 8px 5px 7px; text-align: center; border-radius: 10px;
+    background: color-mix(in srgb, var(--surface-soft) 68%, transparent);
+}
+.hr-metric strong {
+    display: block; color: var(--accent-dark); font-size: 1.35rem; font-weight: 850;
+    line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums;
+}
+.hr-metric span {
+    display: block; margin-top: 5px; color: var(--text-faint); font-size: .61rem;
+    line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hr-proof {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: baseline;
+    margin-top: 11px; font-size: .68rem; line-height: 1.45;
+}
+.hr-proof > span { color: var(--accent); font-weight: 800; white-space: nowrap; }
+.hr-proof strong { color: var(--text-soft); font-weight: 600; }
+
+.overview-proof {
+    display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: baseline;
+    gap: 8px; margin: -2px 0 15px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+}
+.overview-proof > span { color: var(--accent); font-size: .65rem; font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
+.overview-proof > strong { color: var(--text); font-size: .72rem; font-weight: 750; white-space: nowrap; }
+.overview-proof > p { margin: 0; color: var(--text-faint); font-size: .67rem; line-height: 1.4; text-align: right; }
+
+/* 详情背景：恢复辨识度，同时用 mask 让图片左侧自然消失，不出现“贴了一张图”的割裂线。 */
+.detail-card::before {
+    background-position: right center;
+    background-size: min(56%, 680px) auto;
+    opacity: .68;
+    filter: blur(1.5px);
+    transform: scale(1.025);
+    transform-origin: right center;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.04) 12%, rgba(0,0,0,.38) 28%, rgba(0,0,0,.78) 45%, #000 62%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.04) 12%, rgba(0,0,0,.38) 28%, rgba(0,0,0,.78) 45%, #000 62%, #000 100%);
+}
+.detail-card::after {
+    background:
+        linear-gradient(90deg, color-mix(in srgb, var(--surface-solid) 90%, transparent) 0%, color-mix(in srgb, var(--surface-solid) 76%, transparent) 30%, color-mix(in srgb, var(--surface-solid) 44%, transparent) 60%, color-mix(in srgb, var(--surface-solid) 12%, transparent) 100%),
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 8%, transparent) 0%, color-mix(in srgb, var(--surface-solid) 28%, transparent) 72%, color-mix(in srgb, var(--surface-solid) 58%, transparent) 100%);
+}
+[data-theme="dark"] .detail-card::after {
+    background:
+        linear-gradient(90deg, rgba(15,23,42,.88) 0%, rgba(15,23,42,.72) 30%, rgba(15,23,42,.40) 60%, rgba(15,23,42,.12) 100%),
+        linear-gradient(180deg, rgba(15,23,42,.08) 0%, rgba(15,23,42,.30) 72%, rgba(15,23,42,.66) 100%);
+}
+
+@media (min-width: 1101px) {
+    .profile-panel { padding: 28px; }
+    .profile-intro { margin-top: 14px; margin-bottom: 0; }
+    .hr-snapshot { margin-top: 20px; }
+    .profile-value { margin-top: 15px; }
+}
+@media (max-width: 768px) {
+    .overview-section { padding-top: 18px; }
+    .profile-panel { padding: 22px 20px; }
+    .profile-intro { margin: 12px 0 0; font-size: .88rem; line-height: 1.55; }
+    .hr-snapshot { margin: 18px 0 0; padding: 14px 0; }
+    .hr-snapshot-note { display: none; }
+    .hr-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+    .hr-metric { padding: 8px 3px 7px; }
+    .hr-metric strong { font-size: 1.2rem; }
+    .hr-metric span { font-size: .58rem; }
+    .hr-proof { grid-template-columns: 1fr; gap: 2px; margin-top: 10px; }
+    .profile-value { margin-top: 14px; }
+    .overview-proof { grid-template-columns: auto 1fr; gap: 4px 8px; margin-bottom: 13px; }
+    .overview-proof > strong { white-space: normal; }
+    .overview-proof > p { grid-column: 1 / -1; text-align: left; font-size: .65rem; }
+    .detail-card::before {
+        background-position: center top; background-size: 100% auto; opacity: .60; filter: blur(1px); transform: scale(1.015);
+        -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.86) 28%, rgba(0,0,0,.48) 56%, transparent 88%);
+        mask-image: linear-gradient(180deg, #000 0%, rgba(0,0,0,.86) 28%, rgba(0,0,0,.48) 56%, transparent 88%);
+    }
+    .detail-card::after {
+        background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 24%, transparent) 0%, color-mix(in srgb, var(--surface-solid) 66%, transparent) 42%, color-mix(in srgb, var(--surface-solid) 94%, transparent) 78%, var(--surface-solid) 100%);
+    }
+    [data-theme="dark"] .detail-card::after {
+        background: linear-gradient(180deg, rgba(15,23,42,.30) 0%, rgba(15,23,42,.66) 42%, rgba(15,23,42,.92) 78%, rgba(15,23,42,.98) 100%);
+    }
+}
+@media (max-width: 480px) {
+    .profile-panel { padding: 20px 16px; }
+    .profile-head h1 { font-size: 1.95rem; }
+    .profile-subtitle { font-size: .78rem; }
+    .hr-metrics { gap: 4px; }
+    .hr-metric strong { font-size: 1.1rem; }
+    .hr-metric span { font-size: .55rem; }
+    .hr-proof strong { font-size: .68rem; }
+}
+
+
+/* V30 · HR 项目总览：从“卡片墙”改为高密度项目索引。
+   首页只负责让 HR 快速判断；点击后跳到对应详情行。 */
+.overview-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    overflow: visible;
+}
+.project-overview-row {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 92px;
+    padding: 17px 18px;
+    border-width: 0 0 1px;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+.project-overview-row:first-child {
+    border-top: 1px solid var(--line);
+}
+.project-overview-row:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--line);
+    background: color-mix(in srgb, var(--surface-solid) 72%, transparent);
+}
+.overview-row-index {
+    align-self: start;
+    padding-top: 3px;
+    color: var(--text-faint);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+}
+.overview-row-main {
+    min-width: 0;
+}
+.overview-row-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.overview-row-title h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.35;
+    font-weight: 750;
+}
+.overview-row-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+.overview-row-tags .tag {
+    padding: 2px 7px;
+    font-size: .58rem;
+}
+.overview-row-main p {
+    margin: 5px 0 0;
+    color: var(--text-soft);
+    font-size: .78rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.overview-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-faint);
+    font-size: .72rem;
+    white-space: nowrap;
+}
+.overview-row-arrow {
+    font-size: 1rem;
+    transition: transform .2s ease, color .2s ease;
+}
+.project-overview-row:hover .overview-row-arrow {
+    color: var(--accent);
+    transform: translateY(3px);
+}
+
+/* 项目详情行：明确告诉 HR 第二步操作 */
+.detail-view-hint {
+    position: absolute;
+    right: 28px;
+    bottom: 14px;
+    z-index: 3;
+    color: var(--text-faint);
+    font-size: .68rem;
+    letter-spacing: .04em;
+    pointer-events: none;
+    transition: color .2s ease, transform .2s ease;
+}
+.detail-card:hover .detail-view-hint,
+.detail-card-focus .detail-view-hint {
+    color: var(--accent);
+    transform: translateY(-2px);
+}
+.detail-card-focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow-soft) !important;
+}
+
+@media (max-width: 768px) {
+    .project-overview-row {
+        grid-template-columns: 26px minmax(0, 1fr) auto;
+        gap: 8px;
+        min-height: 78px;
+        padding: 14px 8px;
+    }
+    .overview-row-title {
+        display: block;
+    }
+    .overview-row-tags {
+        margin-top: 4px;
+    }
+    .overview-row-main p {
+        font-size: .7rem;
+        margin-top: 4px;
+    }
+    .overview-row-meta {
+        gap: 7px;
+        font-size: .62rem;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    .overview-row-arrow {
+        font-size: .9rem;
+    }
+    .detail-view-hint {
+        right: 18px;
+        bottom: 10px;
+        font-size: .62rem;
+    }
+}
+
+/* V32：项目详情——保持原有卡片结构，仅修正对齐、详情提示和背景层次 */
+@media (max-width: 768px) {
+    .detail-card {
+        position: relative;
+        padding: 20px;
+        gap: 10px;
+    }
+    .detail-index {
+        padding-top: 0;
+    }
+    .detail-view-hint {
+        margin-top: 10px;
+        font-size: .6rem;
+    }
+    .detail-card::before {
+        background-position: center top;
+        background-size: 100% auto;
+        opacity: .48;
+        mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.12) 9%, rgba(0,0,0,.68) 28%, #000 52%, #000 100%);
+        -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.12) 9%, rgba(0,0,0,.68) 28%, #000 52%, #000 100%);
+    }
+    .detail-card::after {
+        background:
+            linear-gradient(90deg,
+                var(--surface-solid) 0%,
+                color-mix(in srgb, var(--surface-solid) 96%, transparent) 13%,
+                color-mix(in srgb, var(--surface-solid) 72%, transparent) 34%,
+                color-mix(in srgb, var(--surface-solid) 22%, transparent) 66%,
+                transparent 100%),
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--surface-solid) 8%, transparent) 0%,
+                color-mix(in srgb, var(--surface-solid) 55%, transparent) 76%,
+                color-mix(in srgb, var(--surface-solid) 92%, transparent) 100%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        mask-image: linear-gradient(90deg, #000 0%, #000 25%, rgba(0,0,0,.65) 48%, rgba(0,0,0,.16) 75%, transparent 100%);
+        -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 25%, rgba(0,0,0,.65) 48%, rgba(0,0,0,.16) 75%, transparent 100%);
+    }
+}
+
+/* ============================================================
+   V33 · 精修：项目总览双列 + 项目详情背景渐清晰/渐模糊
+   ============================================================ */
+
+/* 项目总览：桌面双列，手机恢复单列，避免把 PC 布局硬缩到手机。 */
+@media (min-width: 769px) {
+    .overview-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 22px;
+        row-gap: 0;
+        align-items: stretch;
+    }
+
+    .project-overview-row,
+    .project-overview-row:first-child {
+        min-height: 88px;
+        padding: 15px 14px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        border-radius: 0;
+    }
+
+    .project-overview-row:nth-child(odd) {
+        border-right: 1px solid var(--line);
+    }
+}
+
+@media (max-width: 768px) {
+    .overview-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* 项目详情：背景图必须位于卡片内容之上、文字之下，修复此前 z-index 导致图片完全消失的问题。 */
+.detail-card {
+    background: var(--surface-solid);
+}
+
+.detail-card::before {
+    z-index: 0;
+    background-image: var(--detail-bg-image, none);
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: min(48%, 620px) auto;
+    opacity: .92;
+    transform: scale(1.01);
+    filter: blur(0);
+    -webkit-filter: blur(0);
+    mask-image: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0,0,0,.04) 7%,
+        rgba(0,0,0,.18) 18%,
+        rgba(0,0,0,.52) 30%,
+        rgba(0,0,0,.82) 43%,
+        #000 58%,
+        #000 100%);
+    -webkit-mask-image: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0,0,0,.04) 7%,
+        rgba(0,0,0,.18) 18%,
+        rgba(0,0,0,.52) 30%,
+        rgba(0,0,0,.82) 43%,
+        #000 58%,
+        #000 100%);
+}
+
+/* 通过覆盖层实现“右侧清晰 → 左侧越来越模糊”，不是整张图统一 blur。 */
+.detail-card::after {
+    z-index: 1;
+    background:
+        linear-gradient(90deg,
+            var(--surface-solid) 0%,
+            color-mix(in srgb, var(--surface-solid) 98%, transparent) 12%,
+            color-mix(in srgb, var(--surface-solid) 88%, transparent) 24%,
+            color-mix(in srgb, var(--surface-solid) 62%, transparent) 39%,
+            color-mix(in srgb, var(--surface-solid) 25%, transparent) 55%,
+            transparent 76%,
+            transparent 100%),
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--surface-solid) 16%, transparent) 0%,
+            transparent 48%,
+            color-mix(in srgb, var(--surface-solid) 72%, transparent) 100%);
+    backdrop-filter: blur(0);
+    -webkit-backdrop-filter: blur(0);
+    pointer-events: none;
+    mask-image: linear-gradient(90deg,
+        #000 0%,
+        rgba(0,0,0,.96) 14%,
+        rgba(0,0,0,.78) 28%,
+        rgba(0,0,0,.42) 43%,
+        rgba(0,0,0,.12) 60%,
+        transparent 78%);
+    -webkit-mask-image: linear-gradient(90deg,
+        #000 0%,
+        rgba(0,0,0,.96) 14%,
+        rgba(0,0,0,.78) 28%,
+        rgba(0,0,0,.42) 43%,
+        rgba(0,0,0,.12) 60%,
+        transparent 78%);
+}
+
+/* 左侧再叠一层渐进式柔焦，blur 强度随横向位置变化，而不是全局统一。 */
+.detail-card .detail-content,
+.detail-card .detail-index {
+    position: relative;
+    z-index: 2;
+}
+
+/* 查看详情：脱离 capability 小控件，固定在整个项目框架右下角。 */
+.detail-card .detail-content {
+    padding-bottom: 28px;
+}
+.detail-card .detail-view-hint {
+    position: absolute;
+    right: 28px;
+    bottom: 20px;
+    z-index: 4;
+    margin: 0;
+    pointer-events: none;
+    color: var(--text-faint);
+    font-size: .68rem;
+    letter-spacing: .04em;
+    line-height: 1;
+}
+
+/* PC：图片右侧保持清晰，向左逐步进入柔焦。 */
+@media (min-width: 769px) {
+    .detail-card::after {
+        backdrop-filter: blur(0);
+        -webkit-backdrop-filter: blur(0);
+    }
+    .detail-card::before {
+        background-size: min(48%, 620px) auto;
+    }
+}
+
+/* 手机：图片改为更宽的顶部/右侧构图，同时左边与底部都自然融入白色。 */
+@media (max-width: 768px) {
+    .detail-card {
+        padding: 20px;
+    }
+
+    .detail-card::before {
+        background-position: 72% top;
+        background-size: 125% auto;
+        opacity: .56;
+        mask-image: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0,0,0,.10) 10%,
+            rgba(0,0,0,.34) 24%,
+            rgba(0,0,0,.72) 43%,
+            #000 61%,
+            #000 100%);
+        -webkit-mask-image: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0,0,0,.10) 10%,
+            rgba(0,0,0,.34) 24%,
+            rgba(0,0,0,.72) 43%,
+            #000 61%,
+            #000 100%);
+    }
+
+    .detail-card::after {
+        background:
+            linear-gradient(90deg,
+                var(--surface-solid) 0%,
+                color-mix(in srgb, var(--surface-solid) 94%, transparent) 15%,
+                color-mix(in srgb, var(--surface-solid) 72%, transparent) 34%,
+                color-mix(in srgb, var(--surface-solid) 30%, transparent) 55%,
+                transparent 78%),
+            linear-gradient(180deg,
+                color-mix(in srgb, var(--surface-solid) 8%, transparent) 0%,
+                transparent 50%,
+                var(--surface-solid) 100%);
+        mask-image: linear-gradient(90deg, #000 0%, rgba(0,0,0,.88) 26%, rgba(0,0,0,.38) 52%, transparent 82%);
+        -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0,0,0,.88) 26%, rgba(0,0,0,.38) 52%, transparent 82%);
+    }
+
+    .detail-card .detail-content {
+        padding-bottom: 30px;
+    }
+
+    .detail-card .detail-view-hint {
+        right: 18px;
+        bottom: 16px;
+        font-size: .62rem;
+    }
+}
+
+/* V33.1：真正叠加一张“左侧柔焦副本”，形成右清晰→左模糊，而非仅靠白色遮罩制造错觉。 */
+.detail-card::after {
+    background-image: var(--detail-bg-image, none);
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: min(48%, 620px) auto;
+    opacity: .62;
+    filter: blur(14px);
+    -webkit-filter: blur(14px);
+    transform: scale(1.018);
+    mask-image: linear-gradient(90deg,
+        #000 0%,
+        rgba(0,0,0,.92) 12%,
+        rgba(0,0,0,.68) 27%,
+        rgba(0,0,0,.38) 43%,
+        rgba(0,0,0,.12) 57%,
+        transparent 72%);
+    -webkit-mask-image: linear-gradient(90deg,
+        #000 0%,
+        rgba(0,0,0,.92) 12%,
+        rgba(0,0,0,.68) 27%,
+        rgba(0,0,0,.38) 43%,
+        rgba(0,0,0,.12) 57%,
+        transparent 72%);
+}
+
+@media (max-width: 768px) {
+    .detail-card::after {
+        background-position: 72% top;
+        background-size: 125% auto;
+        opacity: .42;
+        filter: blur(11px);
+        -webkit-filter: blur(11px);
+        mask-image: linear-gradient(90deg,
+            #000 0%,
+            rgba(0,0,0,.82) 16%,
+            rgba(0,0,0,.55) 31%,
+            rgba(0,0,0,.26) 47%,
+            rgba(0,0,0,.08) 62%,
+            transparent 78%);
+        -webkit-mask-image: linear-gradient(90deg,
+            #000 0%,
+            rgba(0,0,0,.82) 16%,
+            rgba(0,0,0,.55) 31%,
+            rgba(0,0,0,.26) 47%,
+            rgba(0,0,0,.08) 62%,
+            transparent 78%);
+    }
+}
+
+
+/* V32.1：项目详情背景图——右侧保持原图清晰，向左逐步模糊并淡出。 */
+.detail-card::before {
+    background-position: right center;
+    background-size: min(52%, 680px) auto;
+    opacity: .96;
+    mask-image: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0,0,0,.04) 10%,
+        rgba(0,0,0,.22) 25%,
+        rgba(0,0,0,.58) 40%,
+        rgba(0,0,0,.86) 54%,
+        #000 68%,
+        #000 100%);
+    -webkit-mask-image: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0,0,0,.04) 10%,
+        rgba(0,0,0,.22) 25%,
+        rgba(0,0,0,.58) 40%,
+        rgba(0,0,0,.86) 54%,
+        #000 68%,
+        #000 100%);
+}
+
+.detail-card::after {
+    background-image: var(--detail-bg-image, none);
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: min(52%, 680px) auto;
+    opacity: .46;
+    filter: blur(16px);
+    -webkit-filter: blur(16px);
+    transform: scale(1.02);
+    mask-image: linear-gradient(90deg,
+        #000 0%,
+        rgba(0,0,0,.92) 14%,
+        rgba(0,0,0,.68) 29%,
+        rgba(0,0,0,.40) 44%,
+        rgba(0,0,0,.16) 58%,
+        transparent 72%);
+    -webkit-mask-image: linear-gradient(90deg,
+        #000 0%,
+        rgba(0,0,0,.92) 14%,
+        rgba(0,0,0,.68) 29%,
+        rgba(0,0,0,.40) 44%,
+        rgba(0,0,0,.16) 58%,
+        transparent 72%);
+}
+
+.detail-card .detail-view-hint {
+    bottom: 14px;
+}
+
+@media (max-width: 768px) {
+    .detail-card::before {
+        background-position: 72% top;
+        background-size: 125% auto;
+        opacity: .60;
+        mask-image: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0,0,0,.08) 10%,
+            rgba(0,0,0,.34) 25%,
+            rgba(0,0,0,.72) 43%,
+            #000 60%,
+            #000 100%);
+        -webkit-mask-image: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0,0,0,.08) 10%,
+            rgba(0,0,0,.34) 25%,
+            rgba(0,0,0,.72) 43%,
+            #000 60%,
+            #000 100%);
+    }
+    .detail-card::after {
+        background-position: 72% top;
+        background-size: 125% auto;
+        opacity: .40;
+        filter: blur(12px);
+        -webkit-filter: blur(12px);
+        mask-image: linear-gradient(90deg,
+            #000 0%,
+            rgba(0,0,0,.82) 16%,
+            rgba(0,0,0,.54) 32%,
+            rgba(0,0,0,.24) 48%,
+            rgba(0,0,0,.08) 62%,
+            transparent 78%);
+        -webkit-mask-image: linear-gradient(90deg,
+            #000 0%,
+            rgba(0,0,0,.82) 16%,
+            rgba(0,0,0,.54) 32%,
+            rgba(0,0,0,.24) 48%,
+            rgba(0,0,0,.08) 62%,
+            transparent 78%);
+    }
+    .detail-card .detail-view-hint {
+        right: 18px;
+        bottom: 10px;
+    }
+}
+
+
+/* V34.1 · 最终精修
+   1) “查看详情”相对项目卡片底部固定 20px；
+   2) 项目详情背景：右侧清晰，向左逐步模糊 + 渐隐，不出现硬切边；
+   3) 项目总览 04「MEGMEET 多行业外协厂项目」固定为两行标题。 */
+
+.detail-card .detail-view-hint {
+    bottom: 20px;
+}
+
+/* 背景图双层叠加：
+   - before：右侧清晰原图；
+   - after：同一张图左侧高斯模糊，并通过 mask 渐隐。
+   两层共同覆盖，视觉上形成“清晰 → 模糊 → 无”的连续过渡。 */
+.detail-card::before {
+    z-index: -2;
+    background-image: var(--detail-bg-image, none);
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: min(54%, 700px) auto;
+    opacity: .82;
+    filter: none;
+    -webkit-filter: none;
+    transform: scale(1.01);
+    mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0,0,0,.02) 10%,
+        rgba(0,0,0,.14) 24%,
+        rgba(0,0,0,.48) 38%,
+        rgba(0,0,0,.82) 52%,
+        #000 66%,
+        #000 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0,0,0,.02) 10%,
+        rgba(0,0,0,.14) 24%,
+        rgba(0,0,0,.48) 38%,
+        rgba(0,0,0,.82) 52%,
+        #000 66%,
+        #000 100%
+    );
+}
+
+.detail-card::after {
+    z-index: -1;
+    content: "";
+    pointer-events: none;
+    background-image: var(--detail-bg-image, none);
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: min(54%, 700px) auto;
+    opacity: .72;
+    filter: blur(15px);
+    -webkit-filter: blur(15px);
+    transform: scale(1.035);
+    transform-origin: right center;
+    mask-image: linear-gradient(
+        90deg,
+        #000 0%,
+        rgba(0,0,0,.96) 12%,
+        rgba(0,0,0,.84) 25%,
+        rgba(0,0,0,.60) 39%,
+        rgba(0,0,0,.30) 53%,
+        rgba(0,0,0,.08) 67%,
+        transparent 80%
+    );
+    -webkit-mask-image: linear-gradient(
+        90deg,
+        #000 0%,
+        rgba(0,0,0,.96) 12%,
+        rgba(0,0,0,.84) 25%,
+        rgba(0,0,0,.60) 39%,
+        rgba(0,0,0,.30) 53%,
+        rgba(0,0,0,.08) 67%,
+        transparent 80%
+    );
+}
+
+/* 04 多行业外协厂：MEGMEET 独占第一行，项目名称第二行 */
+.project-overview-row[data-project="megmeet-outsourcing"] .overview-row-title h3 .megmeet_logo {
+    display: block;
+    width: fit-content;
+    margin-bottom: 1px;
+}
+
+@media (max-width: 768px) {
+    .detail-card::before {
+        background-position: 72% top;
+        background-size: 125% auto;
+        opacity: .60;
+    }
+
+    .detail-card::after {
+        background-position: 72% top;
+        background-size: 125% auto;
+        opacity: .48;
+        filter: blur(12px);
+        -webkit-filter: blur(12px);
+    }
+
+    .detail-card .detail-view-hint {
+        bottom: 20px;
     }
 }
