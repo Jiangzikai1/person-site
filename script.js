@@ -275,6 +275,9 @@ const visitCountEl = document.getElementById('visit-count');
     let detailCarouselPendingDragX = 0;
     let detailCarouselTrackIndex = 1;
     let detailCarouselResetTimer = 0;
+    let detailCarouselPointerStartX = 0;
+    let detailCarouselPointerStartY = 0;
+    let detailCarouselPointerMoved = false;
 
     const getDetailStep = () => detailCardWidth + detailCardGap;
     const getDetailTrackOffset = (trackIndex, dragOffset = 0) => {
@@ -285,7 +288,7 @@ const visitCountEl = document.getElementById('visit-count');
 
     const setDetailTrackPosition = (trackIndex, animate = true, dragOffset = 0) => {
         if (!detailTrack || !detailViewport) return;
-        detailTrack.style.transition = animate ? 'transform 420ms cubic-bezier(0.22, 0.75, 0.2, 1)' : 'none';
+        detailTrack.style.transition = animate ? 'transform 360ms cubic-bezier(0.22, 0.8, 0.18, 1)' : 'none';
         detailTrack.style.transform = `translate3d(${getDetailTrackOffset(trackIndex, dragOffset)}px, 0, 0)`;
     };
 
@@ -391,6 +394,9 @@ const visitCountEl = document.getElementById('visit-count');
             detailCarouselSuppressClick = false;
             detailCarouselDragStartX = event.clientX;
             detailCarouselDragStartY = event.clientY;
+            detailCarouselPointerStartX = event.clientX;
+            detailCarouselPointerStartY = event.clientY;
+            detailCarouselPointerMoved = false;
             detailCarouselDragDelta = 0;
             detailTrack.style.transition = 'none';
             detailViewport.setPointerCapture?.(event.pointerId);
@@ -407,6 +413,7 @@ const visitCountEl = document.getElementById('visit-count');
                     return;
                 }
                 detailCarouselDragHorizontal = true;
+                detailCarouselPointerMoved = true;
                 detailCarouselSuppressClick = true;
             }
             event.preventDefault();
@@ -425,6 +432,16 @@ const visitCountEl = document.getElementById('visit-count');
 
         const finishDetailDrag = event => {
             if (!detailCarouselDragging) return;
+
+            // 桌面端：某些浏览器在 pointer capture + transform 轮播组合下，
+            // click 事件可能落在已经移动过的节点上。对“没有发生横向拖拽”的鼠标
+            // 操作在 pointerup 时直接打开当前项目，作为稳定兜底；真正拖拽仍走轮播。
+            const isDesktopTap = event?.pointerType === 'mouse' &&
+                !detailCarouselDragHorizontal &&
+                !detailCarouselPointerMoved &&
+                Math.abs((event?.clientX ?? detailCarouselPointerStartX) - detailCarouselPointerStartX) < 6 &&
+                Math.abs((event?.clientY ?? detailCarouselPointerStartY) - detailCarouselPointerStartY) < 6;
+
             detailCarouselDragging = false;
             if (detailCarouselDragHorizontal) {
                 const width = detailViewport.clientWidth || 1;
@@ -446,6 +463,17 @@ const visitCountEl = document.getElementById('visit-count');
                 detailCarouselDragRaf = 0;
             }
             if (event?.pointerId != null) detailViewport.releasePointerCapture?.(event.pointerId);
+
+            if (isDesktopTap) {
+                const activeCard = detailCards[detailCarouselIndex];
+                if (activeCard) {
+                    // 阻止紧接着产生的 click 再次打开一次。
+                    detailCarouselSuppressClick = true;
+                    openModalFromCard(activeCard);
+                    window.setTimeout(() => { detailCarouselSuppressClick = false; }, 180);
+                }
+            }
+
             if (detailCarouselSuppressClick) {
                 // 仅屏蔽拖拽结束后紧接着产生的 click，不再锁死 500ms。
                 window.setTimeout(() => { detailCarouselSuppressClick = false; }, 140);
@@ -555,36 +583,65 @@ const visitCountEl = document.getElementById('visit-count');
                 </div>
             `;
 
-            const jumpToDetail = () => {
-                const target = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(id)}"]`);
-                if (!target) return;
-                // 必须在 if 代码块外保存索引。旧版本把 targetIndex 声明在
-                // if 内，桌面端点击总览卡片时后续 focusDetailCard 会直接
-                // 触发 ReferenceError，导致“卡片点了但页面不跳转”。
-                const targetIndex = detailCards.indexOf(target);
-                if (targetIndex < 0) return;
+            const jumpToDetail = (event) => {
+                event?.preventDefault?.();
+                event?.stopPropagation?.();
 
-                // 总览 -> 详情：先切换横向轮播，再把“项目详情”主区域整体带到视口。
-                // 不再用 detail-card 的 getBoundingClientRect() 做纵向定位：卡片本身
-                // 正在被 translate3d 横向移动，尤其是第 05 项在循环轨道末端时，
-                // 容易拿到一个尚未稳定的坐标，表现为“点了但页面没跳”。
-                goToDetailProject(targetIndex, { animate: true, fromUser: false });
+                // 关键：不要通过 querySelector 找目标卡片再 indexOf。
+                // 轮播会在 detailTrack 前后插入 05/01 克隆卡片，05 的 querySelector
+                // 可能拿到克隆节点，导致 indexOf === -1，点击 05 直接中断。
+                const targetIndex = detailCards.findIndex(card => card.dataset.project === id);
+                if (targetIndex < 0 || !projectSection) return;
 
+                clearTimeout(detailCarouselResetTimer);
+                goToDetailProject(targetIndex, {
+                    animate: true,
+                    fromUser: false,
+                    allowLoop: false
+                });
+
+                // 总览点击是“定位”操作，不再依赖轮播卡片的几何位置。
+                // 直接滚动页面真正的 scrollingElement，PC / 手机统一走这一条路径。
                 programmaticScroll = true;
                 clearTimeout(programmaticScrollTimer);
-                clearTimeout(brandIdleTimer);
                 cancelAnimationFrame(brandRaf);
 
-                const focusDetailArea = () => {
-                    scrollToElement(detailCarousel || projectSection, 10);
-                    const activeTarget = detailCards[targetIndex] || target;
-                    activeTarget.classList.add('detail-card-focus');
-                    window.setTimeout(() => activeTarget.classList.remove('detail-card-focus'), 900);
-                };
-                // 给横向轮播一个完整的切换时间，再做纵向滚动；第 05 项同样走这条路径。
-                window.setTimeout(focusDetailArea, 430);
+                const scrollDetailSection = () => {
+                    const scroller = document.scrollingElement || document.documentElement;
+                    const headerHeight = header?.getBoundingClientRect().height || getHeaderOffset();
+                    const sectionTop = projectSection.getBoundingClientRect().top + scroller.scrollTop;
+                    const targetTop = Math.max(0, sectionTop - headerHeight - 10);
 
-                // 兜底：极慢的手机 smooth-scroll 也不会永久锁住 Header。
+                    // 先用原生 scrollingElement，避免 window.scrollTo 在部分桌面浏览器
+                    // + sticky header 场景下出现“调用了但页面位置不变”。
+                    scroller.scrollTo({ top: targetTop, behavior: 'smooth' });
+
+                    const activeTarget = detailCards[targetIndex];
+                    activeTarget?.classList.add('detail-card-focus');
+                    window.setTimeout(() => activeTarget?.classList.remove('detail-card-focus'), 900);
+                };
+
+                // 等轮播 transform 写入后再滚页面，但不再等待完整动画。
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(scrollDetailSection);
+                });
+
+                // 强制兜底：检查页面是否真的已经移动到 projects 区域。
+                // 05 也会经过这里，因此不会出现“05 能切卡但页面不动”。
+                window.setTimeout(() => {
+                    const headerHeight = header?.getBoundingClientRect().height || getHeaderOffset();
+                    const desiredTop = headerHeight + 10;
+                    const currentTop = projectSection.getBoundingClientRect().top;
+                    if (currentTop > desiredTop + 28 || currentTop < desiredTop - 28) {
+                        const scroller = document.scrollingElement || document.documentElement;
+                        const sectionTop = projectSection.getBoundingClientRect().top + scroller.scrollTop;
+                        scroller.scrollTo({
+                            top: Math.max(0, sectionTop - desiredTop),
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 650);
+
                 programmaticScrollTimer = window.setTimeout(() => {
                     programmaticScroll = false;
                     updateBrandByViewport();

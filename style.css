@@ -723,6 +723,8 @@ button {
 .skills-section {
     padding: 42px 0 60px;
 }
+.project-detail-section { scroll-margin-top: calc(var(--header-height) + 10px); }
+.project-detail-section .section-heading { scroll-margin-top: calc(var(--header-height) + 10px); }
 .section-heading {
     display: flex;
     justify-content: space-between;
@@ -4418,6 +4420,28 @@ body.modal-open {
     border-radius: var(--radius-xl);
     min-width: 0;
     touch-action: pan-y;
+    contain: layout paint;
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+}
+.detail-carousel-viewport .detail-list {
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+@media (max-width: 768px) {
+    .detail-carousel-viewport {
+        contain: layout paint;
+    }
+    .detail-carousel-viewport .detail-list {
+        /* 横滑期间尽量把合成工作留给 GPU，避免 backdrop-filter 与主线程布局互相抢占。 */
+        perspective: 1000px;
+    }
+    .detail-carousel-viewport .detail-card {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
 }
 .detail-list {
     display: flex;
