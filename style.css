@@ -4282,10 +4282,21 @@ body.modal-open {
         border-right: 1px solid var(--line) !important;
     }
 
+    /* 手机端顶栏必须始终固定在视口顶部，滚动时绝不离开屏幕。
+       用 fixed 替代 sticky，避免移动浏览器在滚动/合成层切换时把 sticky 顶栏带走。 */
+    body {
+        padding-top: var(--header-height);
+    }
+
     .site-header {
-        transform: translateY(0);
-        transition: transform .22s ease, border-color .25s ease;
-        will-change: transform;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        transform: none !important;
+        transition: border-color .25s ease;
+        will-change: auto;
     }
 
 }
@@ -4319,5 +4330,25 @@ body.modal-open {
     }
     .overview-cards > .project-overview-row:nth-child(even) {
         border-right: 0 !important;
+    }
+}
+
+/* V49 · HEADER CONTEXT FINAL GUARD
+   手机顶栏永远固定；桌面保持 sticky。所有旧版本的隐藏/位移动画不得覆盖。 */
+@media (max-width: 768px) {
+    .site-header,
+    .site-header.header-hidden {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        transform: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    body {
+        padding-top: var(--header-height) !important;
     }
 }

@@ -130,9 +130,9 @@
     const brandSublabel = document.getElementById('brand-sublabel');
     const brandSections = [
         { selector: '#overview .project-overview .section-title-row h2', label: '项目总览', en: 'PROJECT OVERVIEW', section: '#overview' },
-        { selector: '#experience .section-title-row h2', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
-        { selector: '#skills .section-title-row h2', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' },
-        { selector: '#projects .section-title-row h2', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' }
+        { selector: '#experience .experience-label h2, #experience .section-title-row h2', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
+        { selector: '#skills .section-heading h2, #skills .section-title-row h2', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' },
+        { selector: '#projects .section-heading h2, #projects .section-title-row h2', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' }
     ];
     const detailBrandItems = [...document.querySelectorAll('#projects .detail-card[data-project]')].map(card => ({
         heading: card.querySelector('.detail-head h3'),
@@ -170,7 +170,14 @@
     const getBrandCandidate = () => {
         if (!brandLabel) return null;
         const headerBottom = header?.getBoundingClientRect().bottom || getHeaderOffset();
-        const threshold = headerBottom + 2;
+        // UX：顶栏应该“预告”用户即将进入的内容，而不是等标题已经贴到
+        // 顶栏甚至滑过去后才反应。这里看“标题顶部”进入预告区的时机，
+        // 比看标题底部更符合真实阅读感受。
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        // 预告距离：标题真正进入阅读区之前，顶栏先给出明确的上下文提示。
+        // 这里故意比上一版更早：避免用户已经滑过标题一点点后，顶栏才跟上。
+        const switchLead = isMobile ? 155 : 220;
+        const threshold = headerBottom + switchLead;
         const candidates = [];
         brandSections.forEach(item => {
             const el = document.querySelector(item.selector);
