@@ -3970,3 +3970,93 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
     .project-overview-row .overview-row-title h3 { font-size: .74rem !important; }
     .project-overview-row .overview-row-meta { right: 6px !important; }
 }
+
+/* v40 · 移动端项目总览：固定时间位 + 右下角箭头；时间线圆点精确落在线中心 */
+@media (max-width: 768px) {
+    /* 工作经历：track 竖线中心为 x=6px；卡片起点为 x=24px，
+       因此圆点中心应位于卡片内向左 18px 的位置。 */
+    .experience-track::before {
+        left: 6px !important;
+    }
+    .experience-item::before {
+        left: -18px !important;
+        top: 50% !important;
+        width: 9px !important;
+        height: 9px !important;
+        transform: translate(-50%, -50%) !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 项目总览：时间不再参与标题宽度计算，统一固定在右上区域。 */
+    .project-overview-row,
+    .project-overview-row:first-child {
+        grid-template-columns: 22px minmax(0, 1fr) 42px !important;
+        grid-template-rows: 1fr !important;
+        position: relative !important;
+    }
+
+    .project-overview-row .overview-row-main {
+        padding-right: 0 !important;
+    }
+
+    .project-overview-row .overview-row-meta {
+        position: static !important;
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        display: block !important;
+        width: 42px !important;
+        height: 100% !important;
+        min-width: 42px !important;
+        padding: 0 !important;
+        font-size: .54rem !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    /* 日期固定右上，不因 2025 / 2025-2026 长度改变其它元素位置。 */
+    .project-overview-row .overview-row-meta > span:first-child {
+        position: absolute !important;
+        top: 12px !important;
+        right: 7px !important;
+        width: 42px !important;
+        max-width: 42px !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        text-align: right !important;
+        font-variant-numeric: tabular-nums !important;
+    }
+
+    /* 箭头独立放到每个项目控件右下角，释放标题横向空间。 */
+    .project-overview-row .overview-row-arrow {
+        position: absolute !important;
+        right: 7px !important;
+        bottom: 9px !important;
+        width: 16px !important;
+        height: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        font-size: .78rem !important;
+        line-height: 1 !important;
+        color: var(--text-faint) !important;
+    }
+
+    /* 给右上日期留出稳定视觉空间，但不再让日期撑开主内容。 */
+    .project-overview-row .overview-row-topline {
+        padding-right: 0 !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .project-overview-row,
+    .project-overview-row:first-child {
+        grid-template-columns: 18px minmax(0, 1fr) 42px !important;
+    }
+    .project-overview-row .overview-row-meta > span:first-child {
+        right: 6px !important;
+    }
+    .project-overview-row .overview-row-arrow {
+        right: 6px !important;
+        bottom: 8px !important;
+    }
+}
