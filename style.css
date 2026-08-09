@@ -3671,3 +3671,153 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
         font-size: 0.68rem;
     }
 }
+
+/* v38 · 手机端工作经历时间轴与项目总览稳定版 */
+@media (max-width: 768px) {
+    /* 时间轴：圆点中心与竖线中心锁定在同一条 x 轴 */
+    .experience-track {
+        padding-left: 24px;
+    }
+    .experience-track::before {
+        left: 6px;
+    }
+    .experience-item::before {
+        left: -22px;
+        top: 50%;
+        width: 9px;
+        height: 9px;
+        box-sizing: border-box;
+        transform: translate(-50%, -50%);
+    }
+
+    /* 项目总览：两列固定骨架，避免标题/tag/meta 互相挤压 */
+    .overview-cards {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+        column-gap: 14px !important;
+        row-gap: 0 !important;
+        align-items: stretch !important;
+    }
+    .project-overview-row,
+    .project-overview-row:first-child {
+        display: grid !important;
+        grid-template-columns: 22px minmax(0, 1fr) 30px !important;
+        grid-template-rows: auto !important;
+        gap: 6px !important;
+        min-width: 0 !important;
+        min-height: 82px !important;
+        height: 82px !important;
+        box-sizing: border-box !important;
+        padding: 12px 7px !important;
+        align-items: start !important;
+        overflow: hidden !important;
+    }
+    .project-overview-row:nth-child(odd) {
+        border-right: 1px solid var(--line) !important;
+    }
+    .project-overview-row:nth-child(even) {
+        border-right: 0 !important;
+    }
+    .project-overview-row .overview-row-index {
+        grid-column: 1;
+        grid-row: 1;
+        padding-top: 2px;
+        font-size: .64rem;
+        white-space: nowrap;
+    }
+    .project-overview-row .overview-row-main {
+        grid-column: 2;
+        grid-row: 1;
+        display: block !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+    .project-overview-row .overview-row-title {
+        display: block !important;
+        min-width: 0 !important;
+    }
+    .project-overview-row .overview-row-title h3 {
+        display: block !important;
+        min-width: 0 !important;
+        min-height: 2.56em !important;
+        max-height: 2.56em !important;
+        margin: 0 !important;
+        font-size: .84rem !important;
+        line-height: 1.28 !important;
+        overflow: hidden !important;
+        word-break: normal !important;
+        overflow-wrap: anywhere !important;
+    }
+    .project-overview-row .overview-row-tags {
+        display: flex !important;
+        width: 100% !important;
+        height: 18px !important;
+        min-height: 18px !important;
+        margin: 4px 0 0 !important;
+        gap: 4px !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+    }
+    .project-overview-row .overview-row-tags .tag {
+        max-width: 100%;
+        padding: 2px 5px !important;
+        font-size: .54rem !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .project-overview-row .overview-row-main p {
+        display: none !important;
+    }
+    .project-overview-row .overview-row-meta {
+        grid-column: 3;
+        grid-row: 1;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+        min-width: 0 !important;
+        padding-top: 1px !important;
+        font-size: .55rem !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+    }
+    .project-overview-row .overview-row-meta > span:first-child {
+        max-width: 30px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .project-overview-row .overview-row-arrow {
+        font-size: .82rem !important;
+        line-height: 1 !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .overview-cards {
+        column-gap: 10px !important;
+    }
+    .project-overview-row,
+    .project-overview-row:first-child {
+        grid-template-columns: 20px minmax(0, 1fr) 27px !important;
+        min-height: 78px !important;
+        height: 78px !important;
+        padding: 10px 6px !important;
+        gap: 5px !important;
+    }
+    .project-overview-row .overview-row-title h3 {
+        font-size: .79rem !important;
+    }
+    .project-overview-row .overview-row-tags .tag {
+        font-size: .5rem !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+    .project-overview-row .overview-row-meta {
+        font-size: .52rem !important;
+    }
+}
