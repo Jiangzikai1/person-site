@@ -4288,9 +4288,6 @@ body.modal-open {
         will-change: transform;
     }
 
-    .site-header.header-hidden {
-        transform: translateY(-100%);
-    }
 }
 
 @media (max-width: 380px) {

@@ -91,30 +91,8 @@
         header?.classList.toggle('scrolled', scrollY > 6);
     }, { passive: true });
 
-    // 手机端向下滚动时收起顶部标题，向上滚动时恢复；
-    // 避免“项目详情 / PROJECT DETAILS”等上下文标题一直占着屏幕。
-    let lastMobileScrollY = window.scrollY;
-    let mobileHeaderRaf = 0;
-    const updateMobileHeaderVisibility = () => {
-        if (!header || window.innerWidth > 768) return;
-        const currentY = window.scrollY;
-        const delta = currentY - lastMobileScrollY;
-        if (currentY <= 12) {
-            header.classList.remove('header-hidden');
-        } else if (delta > 4) {
-            header.classList.add('header-hidden');
-        } else if (delta < -4) {
-            header.classList.remove('header-hidden');
-        }
-        lastMobileScrollY = currentY;
-    };
-    addEventListener('scroll', () => {
-        cancelAnimationFrame(mobileHeaderRaf);
-        mobileHeaderRaf = requestAnimationFrame(updateMobileHeaderVisibility);
-    }, { passive: true });
-    addEventListener('resize', () => {
-        if (window.innerWidth > 768) header?.classList.remove('header-hidden');
-    });
+    // 顶栏始终固定显示，不再根据手机上下滑动隐藏。
+    header?.classList.remove('header-hidden');
 
     // 手机端 ABOUT ME 的“下滑查看项目总览”只提示一次：用户真正开始下滑后立即消失。
     const mobileOverviewCue = document.querySelector('.mobile-overview-cue');
@@ -151,33 +129,27 @@
     const brandLabel = document.getElementById('brand-label');
     const brandSublabel = document.getElementById('brand-sublabel');
     const brandSections = [
-        { selector: '#experience', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
-        { selector: '#skills', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' },
-        { selector: '#projects', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' },
-        { selector: '#overview', label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO', section: null }
+        { selector: '#overview .project-overview .section-title-row h2', label: '项目总览', en: 'PROJECT OVERVIEW', section: '#overview' },
+        { selector: '#experience .section-title-row h2', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
+        { selector: '#skills .section-title-row h2', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' },
+        { selector: '#projects .section-title-row h2', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' }
     ];
     const detailBrandItems = [...document.querySelectorAll('#projects .detail-card[data-project]')].map(card => ({
-        el: card,
+        heading: card.querySelector('.detail-head h3'),
         label: card.querySelector('.detail-head h3')?.textContent.trim() || '项目详情',
         en: 'PROJECT CASE STUDY'
-    }));
-    // 滚动期间不再频繁改 Header / section class。旧版每 180ms 都会触发
-    // opacity + max-height + margin 动画，手机端尤其容易出现“闪一下/掉帧”。
+    })).filter(item => item.heading);
+
     let activeBrand = '';
     let brandTimer;
-    let brandIdleTimer;
     let brandRaf = 0;
     let programmaticScroll = false;
     let programmaticScrollTimer;
-    const setBrand = (label, en, activeSection = null) => {
+    const setBrand = (label, en) => {
         if (!brandLabel || !label) return;
         if (label === activeBrand && brandLabel.dataset.en === en) return;
         activeBrand = label;
         clearTimeout(brandTimer);
-
-        // 先更新文字，再做很轻的“进入”动效。旧版先把标题 opacity 降到 0，
-        // 再延迟 120ms 换字，手机上会明显看到标题空掉一帧，并产生“卡一下”的感觉。
-        // 现在始终保持占位高度，避免滚动过程中出现布局空档。
         brandLabel.textContent = label;
         brandLabel.dataset.en = en || '';
         if (brandSublabel) {
@@ -197,31 +169,27 @@
     };
     const getBrandCandidate = () => {
         if (!brandLabel) return null;
-        const line = getHeaderOffset() + Math.min(72, Math.max(42, window.innerHeight * 0.12));
-        const detail = detailBrandItems.find(item => {
-            const r = item.el.getBoundingClientRect();
-            return r.top <= line && r.bottom > line;
-        });
-        if (detail) return { label: detail.label, en: detail.en, section: '#projects' };
-
-        const section = brandSections.find(item => {
+        const headerBottom = header?.getBoundingClientRect().bottom || getHeaderOffset();
+        const threshold = headerBottom + 2;
+        const candidates = [];
+        brandSections.forEach(item => {
             const el = document.querySelector(item.selector);
-            if (!el) return false;
+            if (!el) return;
             const r = el.getBoundingClientRect();
-            return r.top <= line && r.bottom > line;
+            if (r.top <= threshold) candidates.push({ ...item, top: r.top });
         });
-        return {
-            label: section?.label || 'ZiKai Portfolio',
-            en: section?.en || 'PERSONAL PORTFOLIO',
-            section: section?.section || null
-        };
+        detailBrandItems.forEach(item => {
+            const r = item.heading.getBoundingClientRect();
+            if (r.top <= threshold) candidates.push({ label: item.label, en: item.en, top: r.top });
+        });
+        if (!candidates.length) return { label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO' };
+        candidates.sort((a, b) => b.top - a.top);
+        return candidates[0];
     };
     const updateBrandByViewport = () => {
         cancelAnimationFrame(brandRaf);
         brandRaf = requestAnimationFrame(() => {
             if (programmaticScroll) {
-                // smooth scroll 期间持续续期；真正停止滚动约 220ms 后再恢复
-                // viewport 检测，因此无论跳多远都不会中途闪烁。
                 clearTimeout(programmaticScrollTimer);
                 programmaticScrollTimer = setTimeout(() => {
                     programmaticScroll = false;
@@ -229,11 +197,8 @@
                 }, 220);
                 return;
             }
-            clearTimeout(brandIdleTimer);
-            brandIdleTimer = setTimeout(() => {
-                const candidate = getBrandCandidate();
-                if (candidate) setBrand(candidate.label, candidate.en, candidate.section);
-            }, 140);
+            const candidate = getBrandCandidate();
+            if (candidate) setBrand(candidate.label, candidate.en);
         });
     };
     addEventListener('scroll', updateBrandByViewport, { passive: true });
