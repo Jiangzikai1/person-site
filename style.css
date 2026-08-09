@@ -4717,3 +4717,82 @@ body.modal-open {
         contain-intrinsic-size: auto;
     }
 }
+
+
+/* ============================================================
+   V59 · MOBILE SCROLL STABILITY
+   目标：项目详情进入视口后不闪屏、不反复重建滤镜图层。
+   手机端相邻卡片仍保留“退后”的层次，但不再使用 CSS filter blur。
+   ============================================================ */
+@media (max-width: 768px) {
+    /* 移动端滚动期间，避免 transform + filter + paint containment 叠加。
+       横向轮播仍由 translate3d 驱动，纵向页面滚动不再触发滤镜重绘。 */
+    .detail-carousel-viewport {
+        contain: layout;
+        isolation: isolate;
+    }
+
+    .detail-carousel-viewport .detail-list,
+    .detail-carousel .detail-list {
+        perspective: none !important;
+        transform-style: flat !important;
+        backface-visibility: visible !important;
+        -webkit-backface-visibility: visible !important;
+    }
+
+    .detail-carousel .detail-card,
+    .detail-carousel .detail-card.is-carousel-active,
+    .detail-carousel .detail-card.is-carousel-prev,
+    .detail-carousel .detail-card.is-carousel-next,
+    .detail-carousel .detail-card.is-carousel-clone {
+        filter: none !important;
+        -webkit-filter: none !important;
+        backface-visibility: visible !important;
+        -webkit-backface-visibility: visible !important;
+    }
+
+    /* 用透明度 + 轻微缩放替代移动端 blur，保留左右预览层次。 */
+    .detail-carousel .detail-card {
+        transition: opacity 260ms ease, transform 260ms ease;
+    }
+
+    .detail-carousel .detail-card.is-carousel-active {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+
+    .detail-carousel .detail-card.is-carousel-prev,
+    .detail-carousel .detail-card.is-carousel-next {
+        opacity: .46 !important;
+        transform: scale(.975) !important;
+    }
+
+    /* 背景图片层固定为普通绘制层，不参与滚动滤镜合成。 */
+    .detail-carousel .detail-card::before,
+    .detail-carousel .detail-card::after {
+        will-change: auto !important;
+        transform: none !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+        backface-visibility: visible !important;
+        -webkit-backface-visibility: visible !important;
+    }
+
+    /* 页面纵向滚动只保留必要的触摸方向，不让轮播抢占垂直手势。 */
+    .detail-carousel-viewport {
+        touch-action: pan-y;
+    }
+}
+
+/* V59 · 项目总览品牌层级：梧州城投与 MEGMEET 使用同一级标题结构。 */
+.project-overview-row[data-project="wuzhou-chengtou"] .overview-row-title .overview-row-brand .chengtou_logo {
+    display: block;
+    width: fit-content;
+    margin-bottom: 1px;
+    font-size: inherit;
+    line-height: 1;
+}
+
+.project-overview-row[data-project="wuzhou-chengtou"] .overview-row-title h3 {
+    display: block;
+}

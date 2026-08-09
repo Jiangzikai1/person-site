@@ -87,8 +87,12 @@
     });
 
     const header = document.querySelector('.site-header');
+    let headerScrolled = false;
     addEventListener('scroll', () => {
-        header?.classList.toggle('scrolled', scrollY > 6);
+        const next = window.scrollY > 6;
+        if (next === headerScrolled) return;
+        headerScrolled = next;
+        header?.classList.toggle('scrolled', next);
     }, { passive: true });
 
     // 顶栏始终固定显示，不再根据手机上下滑动隐藏。
@@ -144,8 +148,17 @@
     let activeDetailIndex = 0;
     let brandTimer;
     let brandRaf = 0;
+    let brandScrollPending = false;
     let programmaticScroll = false;
     let programmaticScrollTimer;
+
+    // 手机滚动性能：只缓存需要观察的节点，并把布局读取限制到约 12fps。
+    // 不在每个 scroll 事件里反复查询 DOM / 读写布局，避免项目详情进入视口后主线程抖动。
+    const brandSectionNodes = brandSections.map(item => ({
+        ...item,
+        el: document.querySelector(item.selector)
+    })).filter(item => item.el);
+
     const setBrand = (label, en) => {
         if (!brandLabel || !label) return;
         if (label === activeBrand && brandLabel.dataset.en === en) return;
@@ -168,52 +181,50 @@
             }, 180);
         });
     };
+
     const getBrandCandidate = () => {
         if (!brandLabel) return null;
+
         const headerBottom = header?.getBoundingClientRect().bottom || getHeaderOffset();
-        // UX：顶栏应该“预告”用户即将进入的内容，而不是等标题已经贴到
-        // 顶栏甚至滑过去后才反应。这里看“标题顶部”进入预告区的时机，
-        // 比看标题底部更符合真实阅读感受。
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        // 预告距离：标题真正进入阅读区之前，顶栏先给出明确的上下文提示。
-        // 这里故意比上一版更早：避免用户已经滑过标题一点点后，顶栏才跟上。
         const switchLead = isMobile ? 155 : 220;
         const threshold = headerBottom + switchLead;
-        const candidates = [];
-        brandSections.forEach(item => {
-            const el = document.querySelector(item.selector);
-            if (!el) return;
-            const r = el.getBoundingClientRect();
-            if (r.top <= threshold) candidates.push({ ...item, top: r.top });
-        });
-        // 项目详情现在是横向轮播：只有当前显示的项目参与顶栏上下文判断。
-        // 如果把所有横向卡片都加入候选，5 个项目的标题垂直位置相同，顶栏会错误地跳到最后一个项目。
+        let best = null;
+
+        // 节流后才执行这些布局读取；不再 document.querySelector + layout read。
+        for (const item of brandSectionNodes) {
+            const top = item.el.getBoundingClientRect().top;
+            if (top <= threshold && (!best || top > best.top)) {
+                best = { label: item.label, en: item.en, top };
+            }
+        }
+
         const activeDetail = detailBrandItems[activeDetailIndex];
         if (activeDetail?.heading) {
-            const r = activeDetail.heading.getBoundingClientRect();
-            if (r.top <= threshold) candidates.push({ label: activeDetail.label, en: activeDetail.en, top: r.top });
-        }
-        if (!candidates.length) return { label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO' };
-        candidates.sort((a, b) => b.top - a.top);
-        return candidates[0];
-    };
-    const updateBrandByViewport = () => {
-        cancelAnimationFrame(brandRaf);
-        brandRaf = requestAnimationFrame(() => {
-            if (programmaticScroll) {
-                clearTimeout(programmaticScrollTimer);
-                programmaticScrollTimer = setTimeout(() => {
-                    programmaticScroll = false;
-                    updateBrandByViewport();
-                }, 220);
-                return;
+            const top = activeDetail.heading.getBoundingClientRect().top;
+            if (top <= threshold && (!best || top > best.top)) {
+                best = { label: activeDetail.label, en: activeDetail.en, top };
             }
+        }
+
+        return best || { label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO' };
+    };
+
+    const updateBrandByViewport = () => {
+        if (brandScrollPending) return;
+        brandScrollPending = true;
+        clearTimeout(brandRaf);
+        // 约 80ms 一次，足够完成上下文切换，但不会跟着每一帧滚动抢主线程。
+        brandRaf = window.setTimeout(() => {
+            brandScrollPending = false;
+            if (programmaticScroll) return;
             const candidate = getBrandCandidate();
             if (candidate) setBrand(candidate.label, candidate.en);
-        });
+        }, 80);
     };
+
     addEventListener('scroll', updateBrandByViewport, { passive: true });
-    addEventListener('resize', updateBrandByViewport);
+    addEventListener('resize', updateBrandByViewport, { passive: true });
     setTimeout(updateBrandByViewport, 0);
 const visitCountEl = document.getElementById('visit-count');
     const vercountSitePv = document.getElementById('vercount_value_site_pv');
@@ -549,12 +560,12 @@ const visitCountEl = document.getElementById('visit-count');
             const date = escapeText(dateEl?.textContent);
             const summary = escapeText(summaryEl?.textContent);
             const tags = tagEls.slice(0, 2).map(el => el.outerHTML).join('');
-            const brandEl = titleEl?.querySelector('.megmeet_logo');
+            const brandEl = titleEl?.querySelector('.megmeet_logo, .chengtou_logo');
             const brand = brandEl ? brandEl.outerHTML : '';
             const mobileName = titleEl
                 ? titleEl.cloneNode(true)
                 : null;
-            if (mobileName && brandEl) mobileName.querySelector('.megmeet_logo')?.remove();
+            if (mobileName && brandEl) mobileName.querySelector('.megmeet_logo, .chengtou_logo')?.remove();
             const mobileProjectName = mobileName ? mobileName.textContent.trim() : title.replace(/<[^>]*>/g, '').trim();
 
             const card = document.createElement('article');
