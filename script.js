@@ -223,8 +223,12 @@
         }, 80);
     };
 
-    addEventListener('scroll', updateBrandByViewport, { passive: true });
-    addEventListener('resize', updateBrandByViewport, { passive: true });
+    // 移动端不让顶部品牌切换参与高频滚动；项目详情轮播本身已经负责当前项目状态。
+    // 桌面端保留原有滚动提示。手机端首次进入页面时只计算一次，避免滚动期间反复触发布局读取。
+    if (window.matchMedia('(min-width: 769px)').matches) {
+        addEventListener('scroll', updateBrandByViewport, { passive: true });
+        addEventListener('resize', updateBrandByViewport, { passive: true });
+    }
     setTimeout(updateBrandByViewport, 0);
 const visitCountEl = document.getElementById('visit-count');
     const vercountSitePv = document.getElementById('vercount_value_site_pv');

@@ -4796,3 +4796,161 @@ body.modal-open {
 .project-overview-row[data-project="wuzhou-chengtou"] .overview-row-title h3 {
     display: block;
 }
+
+
+/* ============================================================
+   V61 · 移动端性能稳定版
+   目标：纵向滚动进入项目详情时不再发生合成层闪烁/重绘抖动。
+   ============================================================ */
+@media (max-width: 768px) {
+    /* 横向轮播中的卡片不能使用 content-visibility：它会在 transform 横移
+       时反复激活/回收绘制层，尤其在 iOS/Android WebView 上容易出现白闪。 */
+    #project-detail-carousel .detail-card,
+    #project-detail-carousel .detail-card.is-carousel-clone {
+        content-visibility: visible !important;
+        contain-intrinsic-size: auto !important;
+        contain: layout !important;
+        will-change: auto !important;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    /* 手机纵向滚动期间彻底取消 backdrop/filter 合成；渐隐由普通渐变完成。 */
+    #project-detail-carousel .detail-card::before {
+        filter: none !important;
+        -webkit-filter: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        transform: none !important;
+        transition: none !important;
+        opacity: .48 !important;
+    }
+    #project-detail-carousel .detail-card::after {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        mask-image: none !important;
+        -webkit-mask-image: none !important;
+        background: linear-gradient(180deg,
+            color-mix(in srgb, var(--surface-solid) 12%, transparent) 0%,
+            color-mix(in srgb, var(--surface-solid) 48%, transparent) 42%,
+            color-mix(in srgb, var(--surface-solid) 88%, transparent) 78%,
+            var(--surface-solid) 100%) !important;
+    }
+
+    /* 详情卡片统一尺寸和图片裁切规则，所有项目使用同一 cover 逻辑。 */
+    #project-detail-carousel .detail-card,
+    #project-detail-carousel .detail-card::before {
+        box-sizing: border-box;
+    }
+    #project-detail-carousel .detail-card::before {
+        inset: 0 !important;
+        background-size: cover !important;
+    }
+
+    /* 总览两列实际给标题更多宽度：编号更窄、卡片间距更小、时间不占独立列。 */
+    .overview-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 8px !important;
+    }
+    .project-overview-row,
+    .project-overview-row:first-child {
+        grid-template-columns: 18px minmax(0, 1fr) !important;
+        column-gap: 5px !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        height: 92px !important;
+        min-height: 92px !important;
+        padding: 10px 6px !important;
+        box-sizing: border-box !important;
+    }
+    .project-overview-row .overview-row-main,
+    .project-overview-row .overview-row-title,
+    .project-overview-row .overview-row-title h3 {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+    .project-overview-row .overview-row-title h3 {
+        font-size: .78rem !important;
+        line-height: 20px !important;
+        height: 20px !important;
+        max-height: 20px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+    /* 两种品牌严格同一级：品牌字号不再让梧州城投显得比 MEGMEET 小。 */
+    .project-overview-row .overview-row-brand .megmeet_logo,
+    .project-overview-row .overview-row-brand .chengtou_logo {
+        font-size: .82rem !important;
+        line-height: 17px !important;
+        font-weight: 800 !important;
+    }
+    .project-overview-row[data-project="wuzhou-chengtou"] .overview-row-brand .chengtou_logo {
+        font-size: .82rem !important;
+    }
+    /* 日期固定在右上，不再挤压项目标题；箭头固定右下。 */
+    .project-overview-row .overview-row-meta {
+        right: 6px !important;
+        top: 10px !important;
+        max-width: 58px !important;
+        pointer-events: none;
+    }
+    .project-overview-row .overview-row-meta > span:first-child {
+        max-width: 54px !important;
+    }
+    .project-overview-row .overview-row-arrow {
+        right: 6px !important;
+        bottom: 8px !important;
+    }
+    /* 标题区域为日期预留右上空间，但项目名本身保持完整可用宽度。 */
+    .project-overview-row .overview-row-topline {
+        padding-right: 0 !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .overview-cards { column-gap: 6px !important; }
+    .project-overview-row,
+    .project-overview-row:first-child {
+        grid-template-columns: 17px minmax(0, 1fr) !important;
+        column-gap: 4px !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    .project-overview-row .overview-row-brand .megmeet_logo,
+    .project-overview-row .overview-row-brand .chengtou_logo {
+        font-size: .80rem !important;
+    }
+}
+
+/* V61.1 · 最终移动端轮播合成策略：不让任何详情卡片参与实时 blur。 */
+@media (max-width: 768px) {
+    #project-detail-carousel .detail-list {
+        transform-style: flat !important;
+        -webkit-transform-style: flat !important;
+        will-change: auto !important;
+    }
+    #project-detail-carousel .detail-list > .detail-card,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transition: opacity 220ms ease, transform 220ms ease !important;
+    }
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next {
+        opacity: .48 !important;
+        transform: scale(.985) !important;
+    }
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+    #project-detail-carousel .detail-card::before,
+    #project-detail-carousel .detail-card::after {
+        will-change: auto !important;
+    }
+}
