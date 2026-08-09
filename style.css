@@ -4298,3 +4298,29 @@ body.modal-open {
         grid-column: auto !important;
     }
 }
+
+
+/* V43 · 手机端细节修正：ABOUT ME 提示一次性消失 + 项目总览固定两列行序 */
+@media (max-width: 768px) {
+    .mobile-overview-cue.is-dismissed {
+        display: none !important;
+    }
+
+    /* 严格保持行优先：01 02 / 03 04 / 05 06……
+       因此 04 永远在 02 正下方，05 永远在 03 正下方；新增项目继续遵循同一规则。 */
+    .overview-cards {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-auto-flow: row !important;
+    }
+    .overview-cards > .project-overview-row {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+    .overview-cards > .project-overview-row:nth-child(odd) {
+        border-right: 1px solid var(--line) !important;
+    }
+    .overview-cards > .project-overview-row:nth-child(even) {
+        border-right: 0 !important;
+    }
+}

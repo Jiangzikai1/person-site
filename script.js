@@ -116,6 +116,17 @@
         if (window.innerWidth > 768) header?.classList.remove('header-hidden');
     });
 
+    // 手机端 ABOUT ME 的“下滑查看项目总览”只提示一次：用户真正开始下滑后立即消失。
+    const mobileOverviewCue = document.querySelector('.mobile-overview-cue');
+    let mobileCueDismissed = false;
+    const dismissMobileOverviewCue = () => {
+        if (mobileCueDismissed || window.innerWidth > 768 || window.scrollY <= 8) return;
+        mobileCueDismissed = true;
+        mobileOverviewCue?.classList.add('is-dismissed');
+        removeEventListener('scroll', dismissMobileOverviewCue);
+    };
+    addEventListener('scroll', dismissMobileOverviewCue, { passive: true });
+
     const backToTopLink = document.getElementById('back-to-top');
     backToTopLink?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -140,10 +151,10 @@
     const brandLabel = document.getElementById('brand-label');
     const brandSublabel = document.getElementById('brand-sublabel');
     const brandSections = [
-        { selector: '#overview', label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO', section: null },
         { selector: '#experience', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
         { selector: '#skills', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' },
-        { selector: '#projects', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' }
+        { selector: '#projects', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' },
+        { selector: '#overview', label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO', section: null }
     ];
     const detailBrandItems = [...document.querySelectorAll('#projects .detail-card[data-project]')].map(card => ({
         el: card,
@@ -288,6 +299,7 @@ const visitCountEl = document.getElementById('visit-count');
 
             const card = document.createElement('article');
             card.className = 'project-card project-overview-row hover-lift';
+            card.classList.remove('overview-row--wide');
             card.dataset.project = id;
             // 手机端项目总览始终保持两列：项目数量增加后也继续沿用同一骨架。
             // 不再根据标题长度让单个项目横跨整行。
