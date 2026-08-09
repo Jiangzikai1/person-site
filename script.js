@@ -271,6 +271,8 @@ const visitCountEl = document.getElementById('visit-count');
     let detailCarouselDragHorizontal = false;
     let detailCarouselSuppressClick = false;
     let detailCarouselRaf = 0;
+    let detailCarouselDragRaf = 0;
+    let detailCarouselPendingDragX = 0;
     let detailCarouselTrackIndex = 1;
     let detailCarouselResetTimer = 0;
 
@@ -283,7 +285,7 @@ const visitCountEl = document.getElementById('visit-count');
 
     const setDetailTrackPosition = (trackIndex, animate = true, dragOffset = 0) => {
         if (!detailTrack || !detailViewport) return;
-        detailTrack.style.transition = animate ? 'transform 520ms cubic-bezier(0.22, 0.75, 0.2, 1)' : 'none';
+        detailTrack.style.transition = animate ? 'transform 420ms cubic-bezier(0.22, 0.75, 0.2, 1)' : 'none';
         detailTrack.style.transform = `translate3d(${getDetailTrackOffset(trackIndex, dragOffset)}px, 0, 0)`;
     };
 
@@ -332,7 +334,7 @@ const visitCountEl = document.getElementById('visit-count');
             detailCarouselResetTimer = window.setTimeout(() => {
                 detailCarouselTrackIndex = target + 1;
                 setDetailTrackPosition(detailCarouselTrackIndex, false);
-            }, animate ? 540 : 0);
+            }, animate ? 440 : 0);
         }
     };
 
@@ -409,8 +411,16 @@ const visitCountEl = document.getElementById('visit-count');
             }
             event.preventDefault();
             detailCarouselDragDelta = dx;
-            // 循环轮播不需要末端阻尼：用户可以一直向同一个方向滑。
-            setDetailTrackPosition(detailCarouselTrackIndex, false, dx);
+            detailCarouselPendingDragX = dx;
+            // pointermove 在触屏设备上可能一帧触发多次。只在下一帧更新一次
+            // transform，避免每个触摸事件都强制浏览器重新计算布局。
+            if (!detailCarouselDragRaf) {
+                detailCarouselDragRaf = requestAnimationFrame(() => {
+                    detailCarouselDragRaf = 0;
+                    if (!detailCarouselDragging || !detailCarouselDragHorizontal) return;
+                    setDetailTrackPosition(detailCarouselTrackIndex, false, detailCarouselPendingDragX);
+                });
+            }
         }, { passive: false });
 
         const finishDetailDrag = event => {
@@ -429,10 +439,16 @@ const visitCountEl = document.getElementById('visit-count');
                 setDetailTrackPosition(detailCarouselTrackIndex, true);
             }
             detailCarouselDragDelta = 0;
+            detailCarouselPendingDragX = 0;
             detailCarouselDragHorizontal = false;
+            if (detailCarouselDragRaf) {
+                cancelAnimationFrame(detailCarouselDragRaf);
+                detailCarouselDragRaf = 0;
+            }
             if (event?.pointerId != null) detailViewport.releasePointerCapture?.(event.pointerId);
             if (detailCarouselSuppressClick) {
-                window.setTimeout(() => { detailCarouselSuppressClick = false; }, 500);
+                // 仅屏蔽拖拽结束后紧接着产生的 click，不再锁死 500ms。
+                window.setTimeout(() => { detailCarouselSuppressClick = false; }, 140);
             }
         };
 
@@ -542,15 +558,17 @@ const visitCountEl = document.getElementById('visit-count');
             const jumpToDetail = () => {
                 const target = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(id)}"]`);
                 if (!target) return;
+                // 必须在 if 代码块外保存索引。旧版本把 targetIndex 声明在
+                // if 内，桌面端点击总览卡片时后续 focusDetailCard 会直接
+                // 触发 ReferenceError，导致“卡片点了但页面不跳转”。
+                const targetIndex = detailCards.indexOf(target);
+                if (targetIndex < 0) return;
 
                 // 总览 -> 详情属于一次完整的程序化滚动。滚动过程中暂停
                 // Header/section 的滚动侦测，避免边滚边改布局造成闪烁。
-                const targetIndex = detailCards.indexOf(target);
-                if (targetIndex >= 0) {
-                    // 先把横向轮播切到目标项目，再把页面平滑带到项目详情区。
-                    // 两者使用同一套 520ms 缓动，因此用户不会感觉“跳了一次再滑一次”。
-                    goToDetailProject(targetIndex, { animate: true, fromUser: false });
-                }
+                // 先把横向轮播切到目标项目，再把页面平滑带到项目详情区。
+                // 两者使用同一套缓动，因此不会出现“先跳一次再滑一次”的割裂感。
+                goToDetailProject(targetIndex, { animate: true, fromUser: false });
 
                 programmaticScroll = true;
                 clearTimeout(programmaticScrollTimer);
@@ -566,7 +584,7 @@ const visitCountEl = document.getElementById('visit-count');
                     activeTarget.classList.add('detail-card-focus');
                     window.setTimeout(() => activeTarget.classList.remove('detail-card-focus'), 900);
                 };
-                window.setTimeout(focusDetailCard, 80);
+                window.setTimeout(focusDetailCard, 40);
 
                 // 兜底：极慢的手机 smooth-scroll 也不会永久锁住 Header。
                 programmaticScrollTimer = window.setTimeout(() => {
