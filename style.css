@@ -4352,3 +4352,54 @@ body.modal-open {
         padding-top: var(--header-height) !important;
     }
 }
+
+
+/* V50 · 细节优化：移动端项目标题扩大可用宽度，时间信息悬浮在行右上角。
+   标题左侧位置不变，只释放原来被“时间/箭头”占用的横向空间；
+   标题最多使用整个控件内部宽度，不会溢出卡片。 */
+@media (max-width: 768px) {
+    .project-overview-row {
+        position: relative;
+        grid-template-columns: 26px minmax(0, 1fr);
+    }
+
+    .project-overview-row .overview-row-main {
+        grid-column: 2;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .project-overview-row .overview-row-meta {
+        position: absolute;
+        top: 13px;
+        right: 9px;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+        pointer-events: none;
+    }
+
+    .project-overview-row .overview-row-title h3 {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+}
+
+@media (max-width: 380px) {
+    .project-overview-row .overview-row-meta {
+        right: 7px;
+    }
+}
+
+/* V50 · 能力与荣誉：把项目详情结束到本区标题之间的留白压缩约一半。 */
+.project-detail-section {
+    padding-bottom: 32px;
+}
+.skills-section {
+    padding-top: 26px;
+}
