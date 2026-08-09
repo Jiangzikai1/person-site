@@ -125,25 +125,42 @@
         label: card.querySelector('.detail-head h3')?.textContent.trim() || '项目详情',
         en: 'PROJECT CASE STUDY'
     }));
+    // 滚动期间不再频繁改 Header / section class。旧版每 180ms 都会触发
+    // opacity + max-height + margin 动画，手机端尤其容易出现“闪一下/掉帧”。
     let activeBrand = '';
     let brandTimer;
     let brandIdleTimer;
-    const setBrand = (label, en, activeSection = null) => {
+    let brandRaf = 0;
+    let programmaticScroll = false;
+    let programmaticScrollTimer;
+    const setBrand = (label, en, activeSection = null, animate = false) => {
         if (!brandLabel || !label) return;
         if (label === activeBrand && brandLabel.dataset.en === en) return;
         activeBrand = label;
-        brandLabel.classList.add('is-changing');
-        brandSublabel?.classList.add('is-changing');
         clearTimeout(brandTimer);
-        brandTimer = setTimeout(() => {
+
+        // 滚动中直接换字，不做淡出/位移动画，避免合成层反复重绘。
+        if (!animate) {
             brandLabel.textContent = label;
+            brandLabel.dataset.en = en || '';
             if (brandSublabel) {
                 brandSublabel.textContent = en || '';
                 brandSublabel.dataset.en = en || '';
             }
-            brandLabel.classList.remove('is-changing');
-            brandSublabel?.classList.remove('is-changing');
-        }, 150);
+        } else {
+            brandLabel.classList.add('is-changing');
+            brandSublabel?.classList.add('is-changing');
+            brandTimer = setTimeout(() => {
+                brandLabel.textContent = label;
+                brandLabel.dataset.en = en || '';
+                if (brandSublabel) {
+                    brandSublabel.textContent = en || '';
+                    brandSublabel.dataset.en = en || '';
+                }
+                brandLabel.classList.remove('is-changing');
+                brandSublabel?.classList.remove('is-changing');
+            }, 120);
+        }
 
         document.querySelectorAll('.context-collapsible').forEach(el => el.classList.remove('context-collapsed'));
         if (activeSection) {
@@ -176,11 +193,24 @@
         };
     };
     const updateBrandByViewport = () => {
-        clearTimeout(brandIdleTimer);
-        brandIdleTimer = setTimeout(() => {
-            const candidate = getBrandCandidate();
-            if (candidate) setBrand(candidate.label, candidate.en, candidate.section);
-        }, 180);
+        cancelAnimationFrame(brandRaf);
+        brandRaf = requestAnimationFrame(() => {
+            if (programmaticScroll) {
+                // smooth scroll 期间持续续期；真正停止滚动约 220ms 后再恢复
+                // viewport 检测，因此无论跳多远都不会中途闪烁。
+                clearTimeout(programmaticScrollTimer);
+                programmaticScrollTimer = setTimeout(() => {
+                    programmaticScroll = false;
+                    updateBrandByViewport();
+                }, 220);
+                return;
+            }
+            clearTimeout(brandIdleTimer);
+            brandIdleTimer = setTimeout(() => {
+                const candidate = getBrandCandidate();
+                if (candidate) setBrand(candidate.label, candidate.en, candidate.section, false);
+            }, 140);
+        });
     };
     addEventListener('scroll', updateBrandByViewport, { passive: true });
     addEventListener('resize', updateBrandByViewport);
@@ -269,9 +299,26 @@ const visitCountEl = document.getElementById('visit-count');
             const jumpToDetail = () => {
                 const target = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(id)}"]`);
                 if (!target) return;
+
+                // 总览 -> 详情属于一次完整的程序化滚动。滚动过程中暂停
+                // Header/section 的滚动侦测，避免边滚边改布局造成闪烁。
+                programmaticScroll = true;
+                clearTimeout(programmaticScrollTimer);
+                clearTimeout(brandIdleTimer);
+                cancelAnimationFrame(brandRaf);
+
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // 不再给整张卡片加 border/box-shadow 动画；移动端这类大面积
+                // 阴影合成很容易出现一帧颜色跳变。
                 target.classList.add('detail-card-focus');
-                window.setTimeout(() => target.classList.remove('detail-card-focus'), 1200);
+                window.setTimeout(() => target.classList.remove('detail-card-focus'), 900);
+
+                // 兜底：极慢的手机 smooth-scroll 也不会永久锁住 Header。
+                programmaticScrollTimer = window.setTimeout(() => {
+                    programmaticScroll = false;
+                    updateBrandByViewport();
+                }, 2200);
             };
             card.addEventListener('click', jumpToDetail);
             card.addEventListener('keydown', (event) => {
@@ -390,7 +437,7 @@ const visitCountEl = document.getElementById('visit-count');
 
         modal.classList.add('active');
         requestAnimationFrame(() => modal.querySelector('.case-intro')?.classList.add('is-ready'));
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
     };
 
     const bindProjectCardEvents = () => {
@@ -409,7 +456,7 @@ const visitCountEl = document.getElementById('visit-count');
     const closeModal = () => {
         modal.classList.remove('active');
         modal?.querySelector('.modal-content')?.style.removeProperty('--modal-bg-image');
-        document.body.style.overflow = '';
+        document.body.classList.remove('modal-open');
     };
 
     modalClose?.addEventListener('click', closeModal);
@@ -448,7 +495,7 @@ const visitCountEl = document.getElementById('visit-count');
     const closeContactModal = () => {
         contactModal?.classList.remove('active');
         contactModal?.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        document.body.classList.remove('modal-open');
     };
 
     const openContactModal = () => {
@@ -456,7 +503,7 @@ const visitCountEl = document.getElementById('visit-count');
         contactModal?.setAttribute('aria-hidden', 'false');
         contactStatus.textContent = '';
         setTimeout(() => document.getElementById('contact-role')?.focus(), 80);
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
     };
 
     const buildNotifyPayload = ({ company, role, contact, note, rating, direct }) => {

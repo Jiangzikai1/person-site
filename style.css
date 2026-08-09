@@ -4060,3 +4060,119 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
         bottom: 8px !important;
     }
 }
+
+
+/* ============================================================
+   V41 · MOBILE STABILITY / NO-FLASH PATCH
+   目标：
+   1) 手机滚动时不再反复触发大面积 backdrop/filter 合成；
+   2) 总览跳详情时暂停滚动侦测，避免 Header/section 动画与 smooth scroll 打架；
+   3) 触摸点击不再出现浏览器 tap highlight / “hover 残留变色”；
+   4) 项目聚焦只使用 outline，不再动画 border + box-shadow。
+   ============================================================ */
+
+/* 手机浏览器默认的点击高亮本身就会表现成“颜色闪一下”。 */
+html,
+body,
+button,
+a,
+.project-card,
+.detail-card,
+.experience-item,
+.fact {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 锚点滚动统一交给 JS，避免 CSS smooth 与 JS smooth 双重参与。 */
+html {
+    scroll-behavior: auto;
+}
+
+body.modal-open {
+    overflow: hidden;
+    scrollbar-gutter: stable;
+}
+
+/* 触摸设备没有真正的 hover：不要让一次点击把 hover 颜色/阴影留下。 */
+@media (hover: none), (pointer: coarse) {
+    .hover-lift:hover,
+    .project-card:hover,
+    .fact:hover,
+    .button-primary:hover,
+    .button-secondary:hover,
+    .honor-card:hover,
+    .project-overview-row:hover {
+        transform: none;
+        border-color: inherit;
+        box-shadow: inherit;
+        background: inherit;
+    }
+
+    .project-overview-row:hover .overview-row-arrow {
+        color: var(--text-faint);
+        transform: none;
+    }
+
+    .site-nav a:hover {
+        color: inherit;
+    }
+}
+
+/* 手机滚动最怕 sticky + backdrop-filter + 大量滤镜同时合成。 */
+@media (max-width: 768px) {
+    .site-header {
+        background: color-mix(in srgb, var(--bg) 96%, transparent);
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* 详情卡片保留背景图和渐变，但取消手机端的大面积 blur/filter。
+       模糊效果交给不参与滚动合成的渐变遮罩来完成。 */
+    .detail-card::before {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: none !important;
+        opacity: .28 !important;
+    }
+
+    .detail-card::after {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        opacity: 1 !important;
+    }
+
+    /* 总览跳转后的提示不再产生大面积阴影动画。 */
+    .detail-card-focus {
+        border-color: var(--accent) !important;
+        box-shadow: none !important;
+        outline: 2px solid color-mix(in srgb, var(--accent) 72%, transparent);
+        outline-offset: -2px;
+    }
+
+    .detail-card-focus .detail-view-hint {
+        color: var(--accent);
+        transform: none;
+    }
+
+    /* 项目详情弹窗：移动端不做位移/滤镜合成。 */
+    #project-modal .modal-content {
+        box-shadow: var(--shadow-soft);
+        will-change: auto;
+        contain: layout paint;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* 桌面端也取消聚焦时的阴影扩散，只留下稳定的边框提示。 */
+@media (min-width: 769px) {
+    .detail-card-focus {
+        border-color: var(--accent) !important;
+        box-shadow: var(--shadow-soft) !important;
+        outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+        outline-offset: -2px;
+    }
+}
