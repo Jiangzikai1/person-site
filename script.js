@@ -133,43 +133,31 @@
     let brandRaf = 0;
     let programmaticScroll = false;
     let programmaticScrollTimer;
-    const setBrand = (label, en, activeSection = null, animate = false) => {
+    const setBrand = (label, en, activeSection = null) => {
         if (!brandLabel || !label) return;
         if (label === activeBrand && brandLabel.dataset.en === en) return;
         activeBrand = label;
         clearTimeout(brandTimer);
 
-        // 滚动中直接换字，不做淡出/位移动画，避免合成层反复重绘。
-        if (!animate) {
-            brandLabel.textContent = label;
-            brandLabel.dataset.en = en || '';
-            if (brandSublabel) {
-                brandSublabel.textContent = en || '';
-                brandSublabel.dataset.en = en || '';
-            }
-        } else {
-            brandLabel.classList.add('is-changing');
-            brandSublabel?.classList.add('is-changing');
+        // 先更新文字，再做很轻的“进入”动效。旧版先把标题 opacity 降到 0，
+        // 再延迟 120ms 换字，手机上会明显看到标题空掉一帧，并产生“卡一下”的感觉。
+        // 现在始终保持占位高度，避免滚动过程中出现布局空档。
+        brandLabel.textContent = label;
+        brandLabel.dataset.en = en || '';
+        if (brandSublabel) {
+            brandSublabel.textContent = en || '';
+            brandSublabel.dataset.en = en || '';
+        }
+        brandLabel.classList.remove('is-entering');
+        brandSublabel?.classList.remove('is-entering');
+        requestAnimationFrame(() => {
+            brandLabel.classList.add('is-entering');
+            brandSublabel?.classList.add('is-entering');
             brandTimer = setTimeout(() => {
-                brandLabel.textContent = label;
-                brandLabel.dataset.en = en || '';
-                if (brandSublabel) {
-                    brandSublabel.textContent = en || '';
-                    brandSublabel.dataset.en = en || '';
-                }
-                brandLabel.classList.remove('is-changing');
-                brandSublabel?.classList.remove('is-changing');
-            }, 120);
-        }
-
-        document.querySelectorAll('.context-collapsible').forEach(el => el.classList.remove('context-collapsed'));
-        if (activeSection) {
-            const section = document.querySelector(activeSection);
-            section?.querySelector(':scope > .container > .section-heading, :scope > .container > .experience-label')?.classList.add('context-collapsed');
-        }
-        if (activeSection === '#projects') {
-            document.querySelector('#projects > .container > .section-heading')?.classList.add('context-collapsed');
-        }
+                brandLabel.classList.remove('is-entering');
+                brandSublabel?.classList.remove('is-entering');
+            }, 180);
+        });
     };
     const getBrandCandidate = () => {
         if (!brandLabel) return null;
@@ -208,7 +196,7 @@
             clearTimeout(brandIdleTimer);
             brandIdleTimer = setTimeout(() => {
                 const candidate = getBrandCandidate();
-                if (candidate) setBrand(candidate.label, candidate.en, candidate.section, false);
+                if (candidate) setBrand(candidate.label, candidate.en, candidate.section);
             }, 140);
         });
     };
@@ -407,6 +395,8 @@ const visitCountEl = document.getElementById('visit-count');
     const modalMeta = document.getElementById('modal-meta');
     const modalBody = document.getElementById('modal-body');
 
+    let modalHistoryActive = false;
+
     const openModalFromCard = (card) => {
         const id = card.getAttribute('data-project');
         const source = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(id)}"]`);
@@ -444,6 +434,13 @@ const visitCountEl = document.getElementById('visit-count');
         modal.classList.add('active');
         requestAnimationFrame(() => modal.querySelector('.case-intro')?.classList.add('is-ready'));
         document.body.classList.add('modal-open');
+
+        // 给详情弹窗建立一个独立的浏览历史记录。这样手机点击系统“返回”时，
+        // 只会关闭详情并回到主页，而不会直接退出网站。URL 不改变，分享/刷新行为也不受影响。
+        if (!modalHistoryActive) {
+            history.pushState({ ...(history.state || {}), projectModal: id }, '', location.href);
+            modalHistoryActive = true;
+        }
     };
 
     const bindProjectCardEvents = () => {
@@ -459,16 +456,27 @@ const visitCountEl = document.getElementById('visit-count');
 
     bindProjectCardEvents();
 
-    const closeModal = () => {
+    const closeModal = ({ fromHistory = false } = {}) => {
+        if (!modal?.classList.contains('active')) return;
         modal.classList.remove('active');
         modal?.querySelector('.modal-content')?.style.removeProperty('--modal-bg-image');
         document.body.classList.remove('modal-open');
+
+        if (modalHistoryActive) {
+            modalHistoryActive = false;
+            if (!fromHistory) history.back();
+        }
     };
 
-    modalClose?.addEventListener('click', closeModal);
+    modalClose?.addEventListener('click', () => closeModal());
     
     modal?.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
+    });
+
+    addEventListener('popstate', () => {
+        // 手机浏览器返回键 / 系统手势返回：只退出项目详情，不离开当前网页。
+        if (modal?.classList.contains('active')) closeModal({ fromHistory: true });
     });
     
     document.addEventListener('keydown', (e) => {

@@ -100,15 +100,16 @@ button {
     flex-direction: column;
     justify-content: center;
     min-width: 0;
+    width: min(250px, 24vw);
+    min-height: 31px;
     line-height: 1.05;
 }
 .brand-label {
     display: block;
-    max-width: 250px;
+    max-width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    transition: opacity .22s ease, transform .32s cubic-bezier(.2,.8,.2,1);
 }
 .brand-sublabel {
     display: block;
@@ -118,12 +119,14 @@ button {
     font-weight: 700;
     letter-spacing: .13em;
     white-space: nowrap;
-    transition: opacity .22s ease, transform .32s cubic-bezier(.2,.8,.2,1);
 }
-.brand-label.is-changing,
-.brand-sublabel.is-changing {
-    opacity: 0;
-    transform: translateY(-6px);
+.brand-label.is-entering,
+.brand-sublabel.is-entering {
+    animation: brand-context-in .18s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes brand-context-in {
+    from { opacity: .45; transform: translate3d(0, 4px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 .brand {
@@ -4235,5 +4238,35 @@ body.modal-open {
     /* 手机版工作经历：最新年份置顶；桌面端继续保持原顺序。 */
     .experience-track {
         flex-direction: column-reverse;
+    }
+}
+
+
+/* V42 · SCROLL CONTEXT / HISTORY STABILITY
+   标题切换只做小幅 transform + opacity，不再先隐藏再换字；
+   固定 brand-copy 占位，避免导航区域在滚动时发生宽高跳变。 */
+@media (max-width: 768px) {
+    .brand-copy {
+        width: min(170px, 43vw);
+        min-height: 30px;
+    }
+
+    .brand-label,
+    .brand-sublabel {
+        will-change: opacity, transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    /* 移动端返回键关闭详情时，不让页面背景发生额外重排。 */
+    body.modal-open {
+        overscroll-behavior: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand-label.is-entering,
+    .brand-sublabel.is-entering {
+        animation: none !important;
     }
 }
