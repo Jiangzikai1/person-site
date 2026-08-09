@@ -4403,3 +4403,172 @@ body.modal-open {
 .skills-section {
     padding-top: 26px;
 }
+
+/* V51 · 项目详情横向轮播
+   一次只展示一个项目；项目数量增加只增加横向内容，不再把页面拉得越来越长。 */
+.detail-carousel {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+.detail-carousel-viewport {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    min-width: 0;
+    touch-action: pan-y;
+}
+.detail-list {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    min-width: 100%;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+}
+.detail-list > .detail-card {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0;
+}
+.detail-card.is-carousel-active {
+    cursor: pointer;
+}
+.detail-carousel-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 8;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--surface-solid) 88%, transparent);
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-50%);
+    transition: opacity .2s ease, transform .2s ease, border-color .2s ease, background .2s ease;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.detail-carousel-btn span {
+    font-size: 1.05rem;
+    line-height: 1;
+    font-weight: 800;
+}
+.detail-carousel-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-50%) scale(1.04);
+}
+.detail-carousel-btn:disabled {
+    opacity: .24;
+    pointer-events: none;
+}
+.detail-carousel-prev { left: 14px; }
+.detail-carousel-next { right: 14px; }
+.detail-carousel-footer {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding-top: 13px;
+}
+.detail-carousel-count {
+    color: var(--text-faint);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.detail-carousel-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.detail-carousel-dots button {
+    width: 6px;
+    height: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--line-strong, var(--line));
+    opacity: .75;
+    cursor: pointer;
+    transition: width .25s ease, opacity .25s ease, background .25s ease;
+}
+.detail-carousel-dots button.is-active {
+    width: 18px;
+    background: var(--accent);
+    opacity: 1;
+}
+.detail-carousel-hint {
+    color: var(--text-faint);
+    font-size: .62rem;
+    white-space: nowrap;
+}
+.detail-carousel-viewport.is-dragging {
+    cursor: grabbing;
+}
+@media (hover: none), (pointer: coarse) {
+    .detail-carousel-btn:hover:not(:disabled) {
+        transform: translateY(-50%);
+        border-color: color-mix(in srgb, var(--line) 90%, transparent);
+        color: var(--text);
+    }
+}
+
+@media (max-width: 768px) {
+    .detail-carousel-viewport {
+        border-radius: var(--radius-xl);
+    }
+    .detail-carousel-btn {
+        width: 32px;
+        height: 32px;
+        background: color-mix(in srgb, var(--surface-solid) 82%, transparent);
+        box-shadow: 0 4px 16px rgba(15, 23, 42, .08);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .detail-carousel-btn span {
+        font-size: .9rem;
+    }
+    .detail-carousel-prev { left: 8px; }
+    .detail-carousel-next { right: 8px; }
+    .detail-carousel-footer {
+        gap: 9px;
+        padding-top: 10px;
+    }
+    .detail-carousel-hint {
+        font-size: .58rem;
+    }
+    .detail-list > .detail-card {
+        /* 保持单卡视觉尺寸，只让横向容器负责切换。 */
+        min-height: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .detail-carousel-btn {
+        width: 29px;
+        height: 29px;
+    }
+    .detail-carousel-prev { left: 6px; }
+    .detail-carousel-next { right: 6px; }
+    .detail-carousel-count,
+    .detail-carousel-hint {
+        font-size: .55rem;
+    }
+}

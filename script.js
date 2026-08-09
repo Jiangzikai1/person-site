@@ -141,6 +141,7 @@
     })).filter(item => item.heading);
 
     let activeBrand = '';
+    let activeDetailIndex = 0;
     let brandTimer;
     let brandRaf = 0;
     let programmaticScroll = false;
@@ -185,10 +186,13 @@
             const r = el.getBoundingClientRect();
             if (r.top <= threshold) candidates.push({ ...item, top: r.top });
         });
-        detailBrandItems.forEach(item => {
-            const r = item.heading.getBoundingClientRect();
-            if (r.top <= threshold) candidates.push({ label: item.label, en: item.en, top: r.top });
-        });
+        // 项目详情现在是横向轮播：只有当前显示的项目参与顶栏上下文判断。
+        // 如果把所有横向卡片都加入候选，5 个项目的标题垂直位置相同，顶栏会错误地跳到最后一个项目。
+        const activeDetail = detailBrandItems[activeDetailIndex];
+        if (activeDetail?.heading) {
+            const r = activeDetail.heading.getBoundingClientRect();
+            if (r.top <= threshold) candidates.push({ label: activeDetail.label, en: activeDetail.en, top: r.top });
+        }
         if (!candidates.length) return { label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO' };
         candidates.sort((a, b) => b.top - a.top);
         return candidates[0];
@@ -242,6 +246,170 @@ const visitCountEl = document.getElementById('visit-count');
     const overviewCards = document.getElementById('project-overview-cards');
     const detailCards = [...document.querySelectorAll('#projects .detail-card[data-project]')];
 
+    /*
+     * 项目详情横向轮播：
+     * - 一次只显示一个项目，项目数量增加只增加横向长度，不再增加页面纵向高度。
+     * - 手机用原生 pointer/touch 手势，桌面用按钮 + 拖拽；两者共用同一个切换函数，
+     *   保证“手动滑动”和“总览点击跳转”使用完全一致的缓动特效。
+     * - 使用 transform 而不是逐帧 scrollTo，避免移动端滚动主线程抖动。
+     */
+    const detailCarousel = document.getElementById('project-detail-carousel');
+    const detailViewport = detailCarousel?.querySelector('.detail-carousel-viewport');
+    const detailTrack = detailCarousel?.querySelector('.detail-list');
+    const detailPrev = detailCarousel?.querySelector('.detail-carousel-prev');
+    const detailNext = detailCarousel?.querySelector('.detail-carousel-next');
+    const detailCount = detailCarousel?.querySelector('.detail-carousel-count');
+    const detailDots = detailCarousel?.querySelector('.detail-carousel-dots');
+    let detailCarouselIndex = 0;
+    let detailCarouselWidth = 0;
+    let detailCarouselDragging = false;
+    let detailCarouselDragStartX = 0;
+    let detailCarouselDragStartY = 0;
+    let detailCarouselDragDelta = 0;
+    let detailCarouselDragHorizontal = false;
+    let detailCarouselSuppressClick = false;
+    let detailCarouselRaf = 0;
+
+    const setDetailTrackPosition = (index, animate = true, dragOffset = 0) => {
+        if (!detailTrack || !detailViewport) return;
+        const maxIndex = Math.max(0, detailCards.length - 1);
+        const safeIndex = Math.max(0, Math.min(maxIndex, index));
+        const width = detailViewport.clientWidth || detailCarouselWidth || 1;
+        detailCarouselWidth = width;
+        detailTrack.style.transition = animate ? 'transform 520ms cubic-bezier(0.22, 0.75, 0.2, 1)' : 'none';
+        detailTrack.style.transform = `translate3d(${(-safeIndex * width) + dragOffset}px, 0, 0)`;
+    };
+
+    const updateDetailCarouselUI = () => {
+        const total = detailCards.length;
+        if (!total) return;
+        detailCount && (detailCount.textContent = `${String(detailCarouselIndex + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`);
+        detailPrev && (detailPrev.disabled = detailCarouselIndex <= 0);
+        detailNext && (detailNext.disabled = detailCarouselIndex >= total - 1);
+        detailDots?.querySelectorAll('button').forEach((dot, i) => {
+            const active = i === detailCarouselIndex;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-selected', String(active));
+            dot.tabIndex = active ? 0 : -1;
+        });
+        detailCards.forEach((card, i) => {
+            card.setAttribute('aria-hidden', String(i !== detailCarouselIndex));
+            card.classList.toggle('is-carousel-active', i === detailCarouselIndex);
+        });
+    };
+
+    const updateDetailCarouselIndex = (index, { animate = true, fromUser = true } = {}) => {
+        if (!detailCards.length) return;
+        const nextIndex = Math.max(0, Math.min(detailCards.length - 1, index));
+        detailCarouselIndex = nextIndex;
+        activeDetailIndex = nextIndex;
+        setDetailTrackPosition(nextIndex, animate);
+        updateDetailCarouselUI();
+        if (fromUser) updateBrandByViewport();
+    };
+
+    const goToDetailProject = (index, options = {}) => {
+        updateDetailCarouselIndex(index, { animate: options.animate !== false, fromUser: options.fromUser !== false });
+    };
+
+    if (detailCarousel && detailViewport && detailTrack && detailCards.length) {
+        detailDots.innerHTML = detailCards.map((card, i) => `
+            <button type="button" role="tab" aria-label="查看项目 ${String(i + 1).padStart(2, '0')}" aria-selected="${i === 0}" tabindex="${i === 0 ? '0' : '-1'}" data-detail-index="${i}"></button>
+        `).join('');
+
+        detailDots.querySelectorAll('button').forEach(dot => {
+            dot.addEventListener('click', () => goToDetailProject(Number(dot.dataset.detailIndex)));
+        });
+        detailPrev?.addEventListener('click', () => goToDetailProject(detailCarouselIndex - 1));
+        detailNext?.addEventListener('click', () => goToDetailProject(detailCarouselIndex + 1));
+
+        const resizeDetailCarousel = () => {
+            cancelAnimationFrame(detailCarouselRaf);
+            detailCarouselRaf = requestAnimationFrame(() => {
+                detailCarouselWidth = detailViewport.clientWidth || 1;
+                setDetailTrackPosition(detailCarouselIndex, false);
+            });
+        };
+        addEventListener('resize', resizeDetailCarousel);
+
+        detailViewport.addEventListener('pointerdown', event => {
+            if (event.button !== undefined && event.button !== 0) return;
+            detailCarouselDragging = true;
+            detailCarouselDragHorizontal = false;
+            detailCarouselSuppressClick = false;
+            detailCarouselDragStartX = event.clientX;
+            detailCarouselDragStartY = event.clientY;
+            detailCarouselDragDelta = 0;
+            detailTrack.style.transition = 'none';
+            detailViewport.setPointerCapture?.(event.pointerId);
+        });
+
+        detailViewport.addEventListener('pointermove', event => {
+            if (!detailCarouselDragging) return;
+            const dx = event.clientX - detailCarouselDragStartX;
+            const dy = event.clientY - detailCarouselDragStartY;
+            if (!detailCarouselDragHorizontal) {
+                if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+                if (Math.abs(dx) <= Math.abs(dy)) {
+                    detailCarouselDragging = false;
+                    return;
+                }
+                detailCarouselDragHorizontal = true;
+                detailCarouselSuppressClick = true;
+            }
+            event.preventDefault();
+            detailCarouselDragDelta = dx;
+            const resistance = (detailCarouselIndex === 0 && dx > 0) || (detailCarouselIndex === detailCards.length - 1 && dx < 0) ? 0.28 : 1;
+            setDetailTrackPosition(detailCarouselIndex, false, dx * resistance);
+        }, { passive: false });
+
+        const finishDetailDrag = event => {
+            if (!detailCarouselDragging) return;
+            detailCarouselDragging = false;
+            if (detailCarouselDragHorizontal) {
+                const width = detailViewport.clientWidth || 1;
+                const travel = Math.abs(detailCarouselDragDelta);
+                const velocityLike = travel / Math.max(1, width);
+                if (travel > Math.min(72, width * 0.16) || velocityLike > 0.22) {
+                    const direction = detailCarouselDragDelta < 0 ? 1 : -1;
+                    goToDetailProject(detailCarouselIndex + direction);
+                } else {
+                    goToDetailProject(detailCarouselIndex);
+                }
+            } else {
+                setDetailTrackPosition(detailCarouselIndex, true);
+            }
+            detailCarouselDragDelta = 0;
+            detailCarouselDragHorizontal = false;
+            if (event?.pointerId != null) detailViewport.releasePointerCapture?.(event.pointerId);
+            if (detailCarouselSuppressClick) {
+                window.setTimeout(() => { detailCarouselSuppressClick = false; }, 500);
+            }
+        };
+
+        detailViewport.addEventListener('pointerup', finishDetailDrag);
+        detailViewport.addEventListener('pointercancel', finishDetailDrag);
+        detailViewport.addEventListener('lostpointercapture', () => {
+            if (detailCarouselDragging) finishDetailDrag({});
+        });
+
+        detailViewport.addEventListener('click', event => {
+            if (detailCarouselSuppressClick) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
+
+        detailCarousel.addEventListener('keydown', event => {
+            if (event.key === 'ArrowLeft') { event.preventDefault(); goToDetailProject(detailCarouselIndex - 1); }
+            if (event.key === 'ArrowRight') { event.preventDefault(); goToDetailProject(detailCarouselIndex + 1); }
+        });
+
+        detailTrack.style.touchAction = 'pan-y';
+        updateDetailCarouselIndex(0, { animate: false, fromUser: false });
+    }
+
+    const projectSection = document.getElementById('projects');
     const escapeText = (value) => String(value ?? '').trim();
 
     const buildOverview = () => {
@@ -301,15 +469,22 @@ const visitCountEl = document.getElementById('visit-count');
 
                 // 总览 -> 详情属于一次完整的程序化滚动。滚动过程中暂停
                 // Header/section 的滚动侦测，避免边滚边改布局造成闪烁。
+                const targetIndex = detailCards.indexOf(target);
+                if (targetIndex >= 0) {
+                    // 先把横向轮播切到目标项目，再把页面平滑带到项目详情区。
+                    // 两者使用同一套 520ms 缓动，因此用户不会感觉“跳了一次再滑一次”。
+                    goToDetailProject(targetIndex, { animate: true, fromUser: false });
+                }
+
                 programmaticScroll = true;
                 clearTimeout(programmaticScrollTimer);
                 clearTimeout(brandIdleTimer);
                 cancelAnimationFrame(brandRaf);
 
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const heading = projectSection?.querySelector('.section-heading');
+                scrollToElement(heading || projectSection, 0);
 
-                // 不再给整张卡片加 border/box-shadow 动画；移动端这类大面积
-                // 阴影合成很容易出现一帧颜色跳变。
+                // 不再给整张卡片加大面积阴影；只给目标项目一个轻量边框提示。
                 target.classList.add('detail-card-focus');
                 window.setTimeout(() => target.classList.remove('detail-card-focus'), 900);
 

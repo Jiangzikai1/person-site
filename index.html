@@ -255,8 +255,14 @@
                 </div>
 
                 
-                <div class="detail-list">
-                    <p class="edit-hint project-edit-hint">项目图片支持 WebP / JPG / PNG。每个项目在 article 的 <code>--detail-bg-image</code> 中单独设置。</p>
+                <p class="edit-hint project-edit-hint">项目图片支持 WebP / JPG / PNG。每个项目在 article 的 <code>--detail-bg-image</code> 中单独设置。</p>
+
+                <div class="detail-carousel" id="project-detail-carousel" aria-label="项目详情横向浏览">
+                    <button class="detail-carousel-btn detail-carousel-prev" type="button" aria-label="查看上一个项目">
+                        <span aria-hidden="true">←</span>
+                    </button>
+                    <div class="detail-carousel-viewport">
+                        <div class="detail-list">
                     
 
                     
@@ -655,10 +661,20 @@
                     </div>
                 </div>
             </article>
-        
-    </div>
-</div>
-</section>
+
+                        </div>
+                    </div>
+                    <button class="detail-carousel-btn detail-carousel-next" type="button" aria-label="查看下一个项目">
+                        <span aria-hidden="true">→</span>
+                    </button>
+                    <div class="detail-carousel-footer" aria-label="项目详情进度">
+                        <span class="detail-carousel-count" aria-live="polite">01 / 05</span>
+                        <div class="detail-carousel-dots" role="tablist" aria-label="选择项目"></div>
+                        <span class="detail-carousel-hint">左右滑动查看更多</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
 
 <section class="skills-section" id="skills">
