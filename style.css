@@ -4651,3 +4651,32 @@ body.modal-open {
 .detail-list > .detail-card.is-carousel-clone {
     cursor: pointer;
 }
+
+/* V56：项目详情轮播性能优化
+   - 横向滑动时把轨道提升为独立合成层，减少 blur 图层跟随移动时的重绘。
+   - 移动端不再使用 content-visibility:auto：否则下一张卡片刚进入视口时会先经历一次“重新绘制模糊层”，
+     容易出现用户看到的“模糊加载一下再变清晰”的卡顿。
+   - blur 强度保持视觉效果，但固定在伪元素上，不随 active 状态切换。 */
+.detail-carousel .detail-list {
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.detail-carousel .detail-card {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.detail-carousel .detail-card::before,
+.detail-carousel .detail-card::after {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+@media (max-width: 768px) {
+    .detail-carousel .detail-card {
+        content-visibility: visible;
+        contain-intrinsic-size: auto;
+    }
+}

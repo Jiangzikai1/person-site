@@ -564,10 +564,10 @@ const visitCountEl = document.getElementById('visit-count');
                 const targetIndex = detailCards.indexOf(target);
                 if (targetIndex < 0) return;
 
-                // 总览 -> 详情属于一次完整的程序化滚动。滚动过程中暂停
-                // Header/section 的滚动侦测，避免边滚边改布局造成闪烁。
-                // 先把横向轮播切到目标项目，再把页面平滑带到项目详情区。
-                // 两者使用同一套缓动，因此不会出现“先跳一次再滑一次”的割裂感。
+                // 总览 -> 详情：先切换横向轮播，再把“项目详情”主区域整体带到视口。
+                // 不再用 detail-card 的 getBoundingClientRect() 做纵向定位：卡片本身
+                // 正在被 translate3d 横向移动，尤其是第 05 项在循环轨道末端时，
+                // 容易拿到一个尚未稳定的坐标，表现为“点了但页面没跳”。
                 goToDetailProject(targetIndex, { animate: true, fromUser: false });
 
                 programmaticScroll = true;
@@ -575,16 +575,14 @@ const visitCountEl = document.getElementById('visit-count');
                 clearTimeout(brandIdleTimer);
                 cancelAnimationFrame(brandRaf);
 
-                // 总览 -> 详情：先切换轮播，再把真正的目标卡片滚到视口。
-                // 直接定位 detailCarousel 在部分移动端会落在标题/容器边缘，
-                // 导致看起来“点击了但没有跳转”。等轮播完成后再定位目标卡片。
-                const focusDetailCard = () => {
+                const focusDetailArea = () => {
+                    scrollToElement(detailCarousel || projectSection, 10);
                     const activeTarget = detailCards[targetIndex] || target;
-                    scrollToElement(activeTarget, 8);
                     activeTarget.classList.add('detail-card-focus');
                     window.setTimeout(() => activeTarget.classList.remove('detail-card-focus'), 900);
                 };
-                window.setTimeout(focusDetailCard, 40);
+                // 给横向轮播一个完整的切换时间，再做纵向滚动；第 05 项同样走这条路径。
+                window.setTimeout(focusDetailArea, 430);
 
                 // 兜底：极慢的手机 smooth-scroll 也不会永久锁住 Header。
                 programmaticScrollTimer = window.setTimeout(() => {
@@ -721,24 +719,31 @@ const visitCountEl = document.getElementById('visit-count');
         }
     };
 
+    // 项目详情统一采用事件委托：原始卡片、循环克隆卡片都从同一个入口判断。
+    // 这样不会因为轮播 transform、克隆节点或事件绑定顺序不同，导致“点击主卡没反应”。
     const bindProjectCardEvents = () => {
-        document.querySelectorAll('#projects .detail-card[data-project]').forEach(card => {
-            if (card.dataset.modalBound === 'true') return;
-            card.dataset.modalBound = 'true';
-            card.addEventListener('click', function(e) {
-                if (e.target.closest('a') || e.target.closest('button')) return;
-                // 侧边预览卡：点击即切换到该项目；当前主卡：点击打开项目详情弹窗。
-                if (this.closest('.detail-list') && !this.classList.contains('is-carousel-active')) {
-                    const targetIndex = detailCards.findIndex(item => item.dataset.project === this.dataset.project);
-                    if (targetIndex >= 0) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        goToDetailProject(targetIndex);
-                    }
-                    return;
-                }
-                openModalFromCard(this);
-            });
+        if (!detailCarousel) return;
+        detailCarousel.addEventListener('click', event => {
+            if (detailCarouselSuppressClick) return;
+            if (event.target.closest('a') || event.target.closest('button')) return;
+            const card = event.target.closest('.detail-card[data-project]');
+            if (!card || !detailCarousel.contains(card)) return;
+
+            const id = card.dataset.project;
+            const targetIndex = detailCards.findIndex(item => item.dataset.project === id);
+            if (targetIndex < 0) return;
+
+            // 当前主卡：打开项目详情弹窗。
+            if (targetIndex === detailCarouselIndex && !card.classList.contains('is-carousel-clone')) {
+                event.preventDefault();
+                openModalFromCard(card);
+                return;
+            }
+
+            // 左右预览卡 / 循环克隆：先切换到对应项目。
+            event.preventDefault();
+            event.stopPropagation();
+            goToDetailProject(targetIndex);
         });
     };
 
