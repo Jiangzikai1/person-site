@@ -694,7 +694,7 @@ button {
 }
 .experience-item.experience-current .year {
     color: #20c968;
-    font-size: 0.8rem;
+    font-size: 1rem;
     font-weight: 700;
     display: block;
     margin-bottom: 4px;
@@ -1986,6 +1986,7 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
     color: var(--text);
     font-size: .84rem;
     line-height: 1.75;
+    margin-bottom: 1px;
 }
 .case-list li::before {
     content: '';
@@ -2446,6 +2447,15 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
     white-space: nowrap;
     line-height: inherit;
 }
+/* 所有 城投 均使用这一标准，不再单独写品牌样式。 */
+.chengtou_logo {
+    display: inline-block;
+    color: #cc1f1f;
+    font-weight: 800;
+    letter-spacing: .015em;
+    white-space: nowrap;
+    line-height: inherit;
+}
 
 /* ABOUT ME：保留全部文字，但减少“控件堆叠感”。 */
 .profile-value {
@@ -2574,7 +2584,10 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
 .megmeet_logo * {
     color: #20A0A0 !important;
 }
-
+.chengtou_logo,
+.chengtou_logo * {
+    color: #cc1f1f !important;
+}
 /* 项目总览右侧滚动区必须跟左侧核心项目卡片共享同一网格行高。
    V24 的固定 270px 会在主卡片内容变高时留下底部空白，因此这里改为
    stretch，由 grid 行高决定整体高度。 */
