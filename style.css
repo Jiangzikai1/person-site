@@ -4572,3 +4572,82 @@ body.modal-open {
         font-size: .55rem;
     }
 }
+
+/* V52 · 项目详情“主卡 + 两侧预览”轮播
+   当前项目保持完整、清晰；相邻项目露出一小部分并轻微模糊，让用户第一眼知道还有更多内容。
+   两端通过首尾克隆实现无缝循环。 */
+.detail-carousel {
+    overflow: hidden;
+    isolation: isolate;
+}
+.detail-carousel-viewport {
+    overflow: visible;
+}
+.detail-list {
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 18px;
+}
+.detail-list > .detail-card {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+    opacity: .42;
+    filter: blur(2.2px);
+    transform: scale(.975);
+    transform-origin: center center;
+    transition: opacity 360ms ease, filter 360ms ease, transform 360ms ease;
+    pointer-events: none;
+    user-select: none;
+}
+.detail-list > .detail-card.is-carousel-active {
+    opacity: 1;
+    filter: none;
+    transform: scale(1);
+    pointer-events: auto;
+    user-select: auto;
+    z-index: 3;
+}
+.detail-list > .detail-card.is-carousel-prev,
+.detail-list > .detail-card.is-carousel-next {
+    opacity: .48;
+    filter: blur(1.8px);
+    transform: scale(.975);
+    z-index: 2;
+}
+.detail-list > .detail-card.is-carousel-clone {
+    pointer-events: none;
+}
+.detail-carousel-btn:disabled {
+    opacity: .55;
+    pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+    .detail-list {
+        gap: 12px;
+    }
+    .detail-list > .detail-card {
+        opacity: .38;
+        filter: blur(1.8px);
+    }
+    .detail-list > .detail-card.is-carousel-prev,
+    .detail-list > .detail-card.is-carousel-next {
+        opacity: .44;
+        filter: blur(1.5px);
+    }
+    .detail-list > .detail-card.is-carousel-active {
+        opacity: 1;
+        filter: none;
+    }
+}
+
+/* V53 · 轮播交互修复：左右露出的预览卡也可以直接点击切换。 */
+.detail-list > .detail-card.is-carousel-prev,
+.detail-list > .detail-card.is-carousel-next {
+    pointer-events: auto;
+    cursor: pointer;
+}
+.detail-list > .detail-card.is-carousel-clone {
+    cursor: pointer;
+}

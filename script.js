@@ -262,6 +262,8 @@ const visitCountEl = document.getElementById('visit-count');
     const detailDots = detailCarousel?.querySelector('.detail-carousel-dots');
     let detailCarouselIndex = 0;
     let detailCarouselWidth = 0;
+    let detailCardWidth = 0;
+    let detailCardGap = 18;
     let detailCarouselDragging = false;
     let detailCarouselDragStartX = 0;
     let detailCarouselDragStartY = 0;
@@ -269,23 +271,28 @@ const visitCountEl = document.getElementById('visit-count');
     let detailCarouselDragHorizontal = false;
     let detailCarouselSuppressClick = false;
     let detailCarouselRaf = 0;
+    let detailCarouselTrackIndex = 1;
+    let detailCarouselResetTimer = 0;
 
-    const setDetailTrackPosition = (index, animate = true, dragOffset = 0) => {
+    const getDetailStep = () => detailCardWidth + detailCardGap;
+    const getDetailTrackOffset = (trackIndex, dragOffset = 0) => {
+        const viewportWidth = detailViewport?.clientWidth || detailCarouselWidth || 1;
+        const sidePeek = Math.max(0, (viewportWidth - detailCardWidth) / 2);
+        return sidePeek - (trackIndex * getDetailStep()) + dragOffset;
+    };
+
+    const setDetailTrackPosition = (trackIndex, animate = true, dragOffset = 0) => {
         if (!detailTrack || !detailViewport) return;
-        const maxIndex = Math.max(0, detailCards.length - 1);
-        const safeIndex = Math.max(0, Math.min(maxIndex, index));
-        const width = detailViewport.clientWidth || detailCarouselWidth || 1;
-        detailCarouselWidth = width;
         detailTrack.style.transition = animate ? 'transform 520ms cubic-bezier(0.22, 0.75, 0.2, 1)' : 'none';
-        detailTrack.style.transform = `translate3d(${(-safeIndex * width) + dragOffset}px, 0, 0)`;
+        detailTrack.style.transform = `translate3d(${getDetailTrackOffset(trackIndex, dragOffset)}px, 0, 0)`;
     };
 
     const updateDetailCarouselUI = () => {
         const total = detailCards.length;
         if (!total) return;
         detailCount && (detailCount.textContent = `${String(detailCarouselIndex + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`);
-        detailPrev && (detailPrev.disabled = detailCarouselIndex <= 0);
-        detailNext && (detailNext.disabled = detailCarouselIndex >= total - 1);
+        detailPrev && (detailPrev.disabled = total < 2);
+        detailNext && (detailNext.disabled = total < 2);
         detailDots?.querySelectorAll('button').forEach((dot, i) => {
             const active = i === detailCarouselIndex;
             dot.classList.toggle('is-active', active);
@@ -293,26 +300,61 @@ const visitCountEl = document.getElementById('visit-count');
             dot.tabIndex = active ? 0 : -1;
         });
         detailCards.forEach((card, i) => {
+            const relative = ((i - detailCarouselIndex + total + 1) % total) - 1;
             card.setAttribute('aria-hidden', String(i !== detailCarouselIndex));
             card.classList.toggle('is-carousel-active', i === detailCarouselIndex);
+            card.classList.toggle('is-carousel-prev', relative === -1);
+            card.classList.toggle('is-carousel-next', relative === 1);
         });
     };
 
-    const updateDetailCarouselIndex = (index, { animate = true, fromUser = true } = {}) => {
+    const updateDetailCarouselIndex = (index, { animate = true, fromUser = true, allowLoop = true } = {}) => {
         if (!detailCards.length) return;
-        const nextIndex = Math.max(0, Math.min(detailCards.length - 1, index));
-        detailCarouselIndex = nextIndex;
-        activeDetailIndex = nextIndex;
-        setDetailTrackPosition(nextIndex, animate);
+        const total = detailCards.length;
+        let target = index;
+        let trackTarget = index + 1;
+        if (allowLoop && total > 1) {
+            if (index < 0) { target = total - 1; trackTarget = 0; }
+            else if (index >= total) { target = 0; trackTarget = total + 1; }
+        } else {
+            target = Math.max(0, Math.min(total - 1, index));
+            trackTarget = target + 1;
+        }
+        detailCarouselIndex = target;
+        activeDetailIndex = target;
+        detailCarouselTrackIndex = trackTarget;
+        setDetailTrackPosition(trackTarget, animate);
         updateDetailCarouselUI();
         if (fromUser) updateBrandByViewport();
+
+        if (trackTarget === 0 || trackTarget === total + 1) {
+            clearTimeout(detailCarouselResetTimer);
+            detailCarouselResetTimer = window.setTimeout(() => {
+                detailCarouselTrackIndex = target + 1;
+                setDetailTrackPosition(detailCarouselTrackIndex, false);
+            }, animate ? 540 : 0);
+        }
     };
 
     const goToDetailProject = (index, options = {}) => {
-        updateDetailCarouselIndex(index, { animate: options.animate !== false, fromUser: options.fromUser !== false });
+        updateDetailCarouselIndex(index, { animate: options.animate !== false, fromUser: options.fromUser !== false, allowLoop: options.allowLoop !== false });
     };
 
     if (detailCarousel && detailViewport && detailTrack && detailCards.length) {
+        // 复制首尾卡片形成无缝循环：最后一张向右滑可自然回到第一张，第一张向左也同理。
+        const firstClone = detailCards[0].cloneNode(true);
+        const lastClone = detailCards[detailCards.length - 1].cloneNode(true);
+        // 克隆卡片也保留项目 ID：这样两侧露出的预览卡同样可以点击。
+        firstClone.dataset.project = detailCards[0].dataset.project;
+        lastClone.dataset.project = detailCards[detailCards.length - 1].dataset.project;
+        [firstClone, lastClone].forEach(clone => {
+            clone.classList.add('is-carousel-clone');
+            clone.setAttribute('aria-hidden', 'true');
+            clone.removeAttribute('tabindex');
+        });
+        detailTrack.prepend(lastClone);
+        detailTrack.append(firstClone);
+
         detailDots.innerHTML = detailCards.map((card, i) => `
             <button type="button" role="tab" aria-label="查看项目 ${String(i + 1).padStart(2, '0')}" aria-selected="${i === 0}" tabindex="${i === 0 ? '0' : '-1'}" data-detail-index="${i}"></button>
         `).join('');
@@ -327,7 +369,15 @@ const visitCountEl = document.getElementById('visit-count');
             cancelAnimationFrame(detailCarouselRaf);
             detailCarouselRaf = requestAnimationFrame(() => {
                 detailCarouselWidth = detailViewport.clientWidth || 1;
-                setDetailTrackPosition(detailCarouselIndex, false);
+                detailCardWidth = Math.min(detailCarouselWidth * (window.matchMedia('(max-width: 768px)').matches ? 0.84 : 0.78), detailCarouselWidth - 24);
+                detailCardGap = window.matchMedia('(max-width: 768px)').matches ? 12 : 18;
+                detailTrack.style.width = `${(detailCardWidth + detailCardGap) * (detailCards.length + 2)}px`;
+                detailTrack.querySelectorAll('.detail-card').forEach(card => {
+                    card.style.flexBasis = `${detailCardWidth}px`;
+                    card.style.width = `${detailCardWidth}px`;
+                    card.style.maxWidth = `${detailCardWidth}px`;
+                });
+                setDetailTrackPosition(detailCarouselTrackIndex, false);
             });
         };
         addEventListener('resize', resizeDetailCarousel);
@@ -359,8 +409,8 @@ const visitCountEl = document.getElementById('visit-count');
             }
             event.preventDefault();
             detailCarouselDragDelta = dx;
-            const resistance = (detailCarouselIndex === 0 && dx > 0) || (detailCarouselIndex === detailCards.length - 1 && dx < 0) ? 0.28 : 1;
-            setDetailTrackPosition(detailCarouselIndex, false, dx * resistance);
+            // 循环轮播不需要末端阻尼：用户可以一直向同一个方向滑。
+            setDetailTrackPosition(detailCarouselTrackIndex, false, dx);
         }, { passive: false });
 
         const finishDetailDrag = event => {
@@ -369,15 +419,14 @@ const visitCountEl = document.getElementById('visit-count');
             if (detailCarouselDragHorizontal) {
                 const width = detailViewport.clientWidth || 1;
                 const travel = Math.abs(detailCarouselDragDelta);
-                const velocityLike = travel / Math.max(1, width);
-                if (travel > Math.min(72, width * 0.16) || velocityLike > 0.22) {
+                if (travel > Math.min(64, width * 0.14)) {
                     const direction = detailCarouselDragDelta < 0 ? 1 : -1;
                     goToDetailProject(detailCarouselIndex + direction);
                 } else {
-                    goToDetailProject(detailCarouselIndex);
+                    setDetailTrackPosition(detailCarouselTrackIndex, true);
                 }
             } else {
-                setDetailTrackPosition(detailCarouselIndex, true);
+                setDetailTrackPosition(detailCarouselTrackIndex, true);
             }
             detailCarouselDragDelta = 0;
             detailCarouselDragHorizontal = false;
@@ -400,12 +449,39 @@ const visitCountEl = document.getElementById('visit-count');
             }
         }, true);
 
+        // 克隆卡片不在 bindProjectCardEvents 的原始节点集合里，
+        // 因此统一在轮播轨道上处理：点击左右预览卡 -> 切换项目；
+        // 点击当前主卡仍由原始卡片事件打开详情弹窗。
+        detailTrack.addEventListener('click', event => {
+            if (detailCarouselSuppressClick) return;
+            const card = event.target.closest('.detail-card[data-project]');
+            if (!card) return;
+
+            const isClone = card.classList.contains('is-carousel-clone');
+            if (!isClone) return; // 原始卡片交给 bindProjectCardEvents，避免重复触发
+
+            const targetIndex = detailCards.findIndex(item => item.dataset.project === card.dataset.project);
+            if (targetIndex < 0) return;
+
+            event.preventDefault();
+            event.stopPropagation();
+            goToDetailProject(targetIndex);
+        });
+
         detailCarousel.addEventListener('keydown', event => {
             if (event.key === 'ArrowLeft') { event.preventDefault(); goToDetailProject(detailCarouselIndex - 1); }
             if (event.key === 'ArrowRight') { event.preventDefault(); goToDetailProject(detailCarouselIndex + 1); }
         });
 
-        detailTrack.style.touchAction = 'pan-y';
+        detailTrack.addEventListener('transitionend', event => {
+            if (event.propertyName !== 'transform') return;
+            if (detailCarouselTrackIndex === 0 || detailCarouselTrackIndex === detailCards.length + 1) {
+                detailCarouselTrackIndex = detailCarouselIndex + 1;
+                setDetailTrackPosition(detailCarouselTrackIndex, false);
+            }
+        });
+
+        resizeDetailCarousel();
         updateDetailCarouselIndex(0, { animate: false, fromUser: false });
     }
 
@@ -481,12 +557,16 @@ const visitCountEl = document.getElementById('visit-count');
                 clearTimeout(brandIdleTimer);
                 cancelAnimationFrame(brandRaf);
 
-                const heading = projectSection?.querySelector('.section-heading');
-                scrollToElement(heading || projectSection, 0);
-
-                // 不再给整张卡片加大面积阴影；只给目标项目一个轻量边框提示。
-                target.classList.add('detail-card-focus');
-                window.setTimeout(() => target.classList.remove('detail-card-focus'), 900);
+                // 总览 -> 详情：先切换轮播，再把真正的目标卡片滚到视口。
+                // 直接定位 detailCarousel 在部分移动端会落在标题/容器边缘，
+                // 导致看起来“点击了但没有跳转”。等轮播完成后再定位目标卡片。
+                const focusDetailCard = () => {
+                    const activeTarget = detailCards[targetIndex] || target;
+                    scrollToElement(activeTarget, 8);
+                    activeTarget.classList.add('detail-card-focus');
+                    window.setTimeout(() => activeTarget.classList.remove('detail-card-focus'), 900);
+                };
+                window.setTimeout(focusDetailCard, 80);
 
                 // 兜底：极慢的手机 smooth-scroll 也不会永久锁住 Header。
                 programmaticScrollTimer = window.setTimeout(() => {
@@ -629,6 +709,16 @@ const visitCountEl = document.getElementById('visit-count');
             card.dataset.modalBound = 'true';
             card.addEventListener('click', function(e) {
                 if (e.target.closest('a') || e.target.closest('button')) return;
+                // 侧边预览卡：点击即切换到该项目；当前主卡：点击打开项目详情弹窗。
+                if (this.closest('.detail-list') && !this.classList.contains('is-carousel-active')) {
+                    const targetIndex = detailCards.findIndex(item => item.dataset.project === this.dataset.project);
+                    if (targetIndex >= 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goToDetailProject(targetIndex);
+                    }
+                    return;
+                }
                 openModalFromCard(this);
             });
         });
