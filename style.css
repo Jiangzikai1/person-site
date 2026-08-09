@@ -3471,3 +3471,87 @@ section[id] { scroll-margin-top: calc(var(--header-height) + 4px); }
     .project-overview-row:first-child { padding-left: 7px; padding-right: 7px; }
     .project-overview-row .overview-row-title h3 { font-size: .82rem; }
 }
+
+/* V36 · 手机端项目详情性能与项目总览对齐修复 */
+@media (max-width: 768px) {
+    /* 详情卡片不再使用 content-visibility：避免从总览跳到详情时重新布局造成闪烁/跳帧 */
+    .detail-card {
+        content-visibility: visible;
+        contain-intrinsic-size: auto;
+    }
+
+    /* 手机端弹窗避免 backdrop-filter 与背景图滤镜同时触发合成抖动 */
+    #project-modal.modal-overlay {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(15, 23, 42, .58);
+        transition: opacity .18s ease, visibility .18s ease;
+    }
+    #project-modal .modal-content {
+        transform: none;
+        transition: opacity .18s ease;
+        will-change: opacity;
+        contain: layout paint;
+    }
+    #project-modal.active .modal-content {
+        transform: none;
+    }
+    #project-modal .modal-header {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    #project-modal .case-intro {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    /* 总览两列：标题区高度统一，tag 永远落在同一条位置 */
+    .project-overview-row,
+    .project-overview-row:first-child {
+        align-items: start;
+    }
+    .project-overview-row .overview-row-main {
+        display: grid;
+        grid-template-rows: minmax(2.55em, auto) 20px;
+        align-content: start;
+        min-height: 58px;
+    }
+    .project-overview-row .overview-row-title {
+        display: contents;
+    }
+    .project-overview-row .overview-row-title h3 {
+        min-width: 0;
+        min-height: 2.55em;
+        margin: 0;
+        line-height: 1.28;
+        display: flex;
+        align-items: flex-start;
+        overflow: hidden;
+    }
+    .project-overview-row .overview-row-tags {
+        min-height: 20px;
+        margin-top: 0;
+        align-items: center;
+        overflow: hidden;
+        flex-wrap: nowrap;
+    }
+    .project-overview-row .overview-row-tags .tag {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+    .project-overview-row .overview-row-meta {
+        align-self: start;
+        padding-top: 1px;
+    }
+}
+
+@media (max-width: 380px) {
+    .project-overview-row .overview-row-main {
+        grid-template-rows: minmax(2.55em, auto) 19px;
+    }
+    .project-overview-row .overview-row-title h3 {
+        min-height: 2.55em;
+        font-size: .82rem;
+    }
+}
