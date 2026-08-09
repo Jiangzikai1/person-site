@@ -4176,3 +4176,64 @@ body.modal-open {
         outline-offset: -2px;
     }
 }
+
+
+/* v41.1 · 手机端首屏操作提示 + 长标题自动扩展 + 工作经历倒叙
+   仅作用于移动端，桌面端保持原有布局与顺序。 */
+.mobile-overview-cue {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* ABOUT ME 卡片下方明确提示还有项目总览，避免首屏用户不知道需要继续下滑。 */
+    .mobile-overview-cue {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 12px 0 2px;
+        color: var(--text-faint);
+        font-size: .72rem;
+        letter-spacing: .04em;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .mobile-overview-cue-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+        border-radius: 50%;
+        color: var(--accent);
+        font-size: .9rem;
+        line-height: 1;
+        animation: mobile-overview-cue-bounce 1.8s ease-in-out infinite;
+    }
+
+    @keyframes mobile-overview-cue-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(4px); }
+    }
+
+    /* 长标题项目在手机两列总览中横跨整行，自动获得完整标题宽度。 */
+    .overview-cards > .project-overview-row.overview-row--wide {
+        grid-column: 1 / -1;
+        border-right: 0;
+    }
+
+    .overview-cards > .project-overview-row.overview-row--wide .overview-row-main {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .overview-cards > .project-overview-row.overview-row--wide .overview-row-title h3 {
+        max-width: none;
+    }
+
+    /* 手机版工作经历：最新年份置顶；桌面端继续保持原顺序。 */
+    .experience-track {
+        flex-direction: column-reverse;
+    }
+}

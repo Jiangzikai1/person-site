@@ -276,6 +276,12 @@ const visitCountEl = document.getElementById('visit-count');
             const card = document.createElement('article');
             card.className = 'project-card project-overview-row hover-lift';
             card.dataset.project = id;
+            // 手机端两列布局空间有限：标题较长时让该项目横跨整行，
+            // 避免出现标题被截断；桌面端不改变原有排版。
+            const mobileTitleLength = mobileProjectName.replace(/\s+/g, '').length;
+            if (mobileTitleLength >= 8 || id === 'megmeet-outsourcing') {
+                card.classList.add('overview-row--wide');
+            }
             card.setAttribute('role', 'button');
             card.setAttribute('tabindex', '0');
             card.innerHTML = `
