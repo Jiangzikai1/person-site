@@ -91,6 +91,31 @@
         header?.classList.toggle('scrolled', scrollY > 6);
     }, { passive: true });
 
+    // 手机端向下滚动时收起顶部标题，向上滚动时恢复；
+    // 避免“项目详情 / PROJECT DETAILS”等上下文标题一直占着屏幕。
+    let lastMobileScrollY = window.scrollY;
+    let mobileHeaderRaf = 0;
+    const updateMobileHeaderVisibility = () => {
+        if (!header || window.innerWidth > 768) return;
+        const currentY = window.scrollY;
+        const delta = currentY - lastMobileScrollY;
+        if (currentY <= 12) {
+            header.classList.remove('header-hidden');
+        } else if (delta > 4) {
+            header.classList.add('header-hidden');
+        } else if (delta < -4) {
+            header.classList.remove('header-hidden');
+        }
+        lastMobileScrollY = currentY;
+    };
+    addEventListener('scroll', () => {
+        cancelAnimationFrame(mobileHeaderRaf);
+        mobileHeaderRaf = requestAnimationFrame(updateMobileHeaderVisibility);
+    }, { passive: true });
+    addEventListener('resize', () => {
+        if (window.innerWidth > 768) header?.classList.remove('header-hidden');
+    });
+
     const backToTopLink = document.getElementById('back-to-top');
     backToTopLink?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -264,12 +289,8 @@ const visitCountEl = document.getElementById('visit-count');
             const card = document.createElement('article');
             card.className = 'project-card project-overview-row hover-lift';
             card.dataset.project = id;
-            // 手机端两列布局空间有限：标题较长时让该项目横跨整行，
-            // 避免出现标题被截断；桌面端不改变原有排版。
-            const mobileTitleLength = mobileProjectName.replace(/\s+/g, '').length;
-            if (mobileTitleLength >= 8 || id === 'megmeet-outsourcing') {
-                card.classList.add('overview-row--wide');
-            }
+            // 手机端项目总览始终保持两列：项目数量增加后也继续沿用同一骨架。
+            // 不再根据标题长度让单个项目横跨整行。
             card.setAttribute('role', 'button');
             card.setAttribute('tabindex', '0');
             card.innerHTML = `

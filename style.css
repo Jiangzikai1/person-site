@@ -4270,3 +4270,31 @@ body.modal-open {
         animation: none !important;
     }
 }
+
+
+/* V43 · MOBILE PROJECT OVERVIEW / HEADER BEHAVIOR
+   1) 所有项目始终保持两列，不因标题长度自动横跨整行；
+   2) 梧州城投等品牌统一沿用 .megmeet_logo；
+   3) 手机向下滚动时收起顶部上下文标题，向上滚动再显示。 */
+@media (max-width: 768px) {
+    .overview-cards > .project-overview-row.overview-row--wide {
+        grid-column: auto !important;
+        border-right: 1px solid var(--line) !important;
+    }
+
+    .site-header {
+        transform: translateY(0);
+        transition: transform .22s ease, border-color .25s ease;
+        will-change: transform;
+    }
+
+    .site-header.header-hidden {
+        transform: translateY(-100%);
+    }
+}
+
+@media (max-width: 380px) {
+    .overview-cards > .project-overview-row.overview-row--wide {
+        grid-column: auto !important;
+    }
+}
