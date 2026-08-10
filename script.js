@@ -292,6 +292,12 @@ const visitCountEl = document.getElementById('visit-count');
     const overviewCards = document.getElementById('project-overview-cards');
     const detailCards = [...document.querySelectorAll('#projects .detail-card[data-project]')];
 
+    // 详情提示统一挂到整张卡片上，避免随内容高度变化而在手机/电脑端错位。
+    detailCards.forEach(card => {
+        const hint = card.querySelector('.detail-view-hint');
+        if (hint && hint.parentElement !== card) card.appendChild(hint);
+    });
+
     // 手机端只解码当前项目及相邻项目图片，避免进入页面时同时加载全部大图。
     // 桌面端仍保留完整预载，确保宽屏轮播两侧预览即时显示。
     const mobileDetailMedia = window.matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)');
@@ -359,8 +365,10 @@ const visitCountEl = document.getElementById('visit-count');
 
     const setDetailTrackPosition = (trackIndex, animate = true, dragOffset = 0) => {
         if (!detailTrack || !detailViewport) return;
-        detailTrack.style.transition = animate ? 'transform 360ms cubic-bezier(0.22, 0.8, 0.18, 1)' : 'none';
-        detailTrack.style.transform = `translate3d(${getDetailTrackOffset(trackIndex, dragOffset)}px, 0, 0)`;
+        const transition = animate ? 'transform 300ms cubic-bezier(0.22, 0.8, 0.18, 1)' : 'none';
+        const transform = `translate3d(${getDetailTrackOffset(trackIndex, dragOffset)}px, 0, 0)`;
+        if (detailTrack.style.transition !== transition) detailTrack.style.transition = transition;
+        if (detailTrack.style.transform !== transform) detailTrack.style.transform = transform;
     };
 
     const updateDetailCarouselUI = () => {
@@ -464,6 +472,7 @@ const visitCountEl = document.getElementById('visit-count');
         detailViewport.addEventListener('pointerdown', event => {
             if (event.button !== undefined && event.button !== 0) return;
             detailCarouselDragging = true;
+            detailViewport.classList.add('is-dragging');
             detailCarouselDragHorizontal = false;
             detailCarouselSuppressClick = false;
             detailCarouselDragStartX = event.clientX;
@@ -517,6 +526,7 @@ const visitCountEl = document.getElementById('visit-count');
                 Math.abs((event?.clientY ?? detailCarouselPointerStartY) - detailCarouselPointerStartY) < 6;
 
             detailCarouselDragging = false;
+            detailViewport.classList.remove('is-dragging');
             if (detailCarouselDragHorizontal) {
                 const width = detailViewport.clientWidth || 1;
                 const travel = Math.abs(detailCarouselDragDelta);
@@ -653,7 +663,6 @@ const visitCountEl = document.getElementById('visit-count');
                 </div>
                 <div class="overview-row-meta">
                     <span>${date}</span>
-                    <span class="overview-row-arrow">↓</span>
                 </div>
             `;
 
