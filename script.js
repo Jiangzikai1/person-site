@@ -115,6 +115,37 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // 代表性数字计数动画：只处理 HTML 中带 data-count-target 的 “+” 指标。
+    // 目标值直接在 index.html 的 data-count-target 属性中修改。
+    const animatedMetrics = [...document.querySelectorAll('.hr-metric strong[data-count-target]')];
+    const reduceMetricMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    animatedMetrics.forEach(metric => {
+        const target = Math.max(0, Number.parseInt(metric.dataset.countTarget || '', 10));
+        if (!Number.isFinite(target) || !metric.textContent.trim().endsWith('+')) return;
+
+        metric.setAttribute('aria-label', `${target}+`);
+        if (reduceMetricMotion) {
+            metric.textContent = `${target}+`;
+            return;
+        }
+
+        metric.textContent = '0+';
+        const duration = Math.min(1600, 1050 + target * 30);
+        const startCounter = startTime => {
+            const tick = now => {
+                const progress = Math.min(1, (now - startTime) / duration);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                metric.textContent = `${Math.round(target * eased)}+`;
+                if (progress < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        };
+
+        // 等浏览器先绘制 0+，再开始累加。
+        requestAnimationFrame(() => requestAnimationFrame(startCounter));
+    });
+
     const revealObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
