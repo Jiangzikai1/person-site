@@ -261,6 +261,31 @@ const visitCountEl = document.getElementById('visit-count');
     const overviewCards = document.getElementById('project-overview-cards');
     const detailCards = [...document.querySelectorAll('#projects .detail-card[data-project]')];
 
+    // 手机端只解码当前项目及相邻项目图片，避免进入页面时同时加载全部大图。
+    // 桌面端仍保留完整预载，确保宽屏轮播两侧预览即时显示。
+    const mobileDetailMedia = window.matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)');
+    detailCards.forEach(card => {
+        const image = card.style.getPropertyValue('--detail-bg-image').trim();
+        if (image) card.dataset.detailBgImage = image;
+        if (mobileDetailMedia.matches) card.style.removeProperty('--detail-bg-image');
+    });
+
+    const hydrateDetailImages = (activeIndex = 0) => {
+        const total = detailCards.length;
+        if (!total) return;
+        const indexes = mobileDetailMedia.matches
+            ? [activeIndex, (activeIndex - 1 + total) % total, (activeIndex + 1) % total]
+            : detailCards.map((_, index) => index);
+        new Set(indexes).forEach(index => {
+            const card = detailCards[index];
+            const image = card?.dataset.detailBgImage;
+            if (card && image && !card.style.getPropertyValue('--detail-bg-image')) {
+                card.style.setProperty('--detail-bg-image', image);
+            }
+        });
+    };
+    hydrateDetailImages(0);
+
     /*
      * 项目详情横向轮播：
      * - 一次只显示一个项目，项目数量增加只增加横向长度，不再增加页面纵向高度。
@@ -310,6 +335,7 @@ const visitCountEl = document.getElementById('visit-count');
     const updateDetailCarouselUI = () => {
         const total = detailCards.length;
         if (!total) return;
+        hydrateDetailImages(detailCarouselIndex);
         detailCount && (detailCount.textContent = `${String(detailCarouselIndex + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`);
         detailPrev && (detailPrev.disabled = total < 2);
         detailNext && (detailNext.disabled = total < 2);
@@ -371,6 +397,8 @@ const visitCountEl = document.getElementById('visit-count');
             clone.classList.add('is-carousel-clone');
             clone.setAttribute('aria-hidden', 'true');
             clone.removeAttribute('tabindex');
+            // 循环占位卡只负责视觉预览，不复制大段隐藏案例内容，降低手机端 DOM 与内存压力。
+            clone.querySelector('.project-case-data')?.remove();
         });
         detailTrack.prepend(lastClone);
         detailTrack.append(firstClone);
