@@ -116,15 +116,22 @@
     });
 
     // 代表性数字计数动画：等待页面资源全部加载完成后再启动。
-    // 只处理 HTML 中带 data-count-target 的 “+” 指标；目标值在 index.html 修改。
-    const animatedMetrics = [...document.querySelectorAll('.hr-metric strong[data-count-target]')];
+    // 不维护额外属性：strong 的文字末尾带 + 就自动计数，删除 + 就保持静态。
+    const animatedMetrics = [...document.querySelectorAll('.hr-metric strong')].map(metric => {
+        const source = metric.textContent.trim();
+        const match = source.match(/^(\d[\d,]*)\+$/);
+        if (!match) return null;
+
+        const target = Number.parseInt(match[1].replaceAll(',', ''), 10);
+        if (!Number.isFinite(target)) return null;
+
+        metric.classList.add('has-count-animation');
+        return { metric, target };
+    }).filter(Boolean);
     const reduceMetricMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const startMetricCounters = () => {
-        animatedMetrics.forEach((metric, index) => {
-            const target = Math.max(0, Number.parseInt(metric.dataset.countTarget || '', 10));
-            if (!Number.isFinite(target) || !metric.textContent.trim().endsWith('+')) return;
-
+        animatedMetrics.forEach(({ metric, target }, index) => {
             metric.setAttribute('aria-label', `${target}+`);
             if (reduceMetricMotion) {
                 metric.textContent = `${target}+`;
@@ -133,14 +140,13 @@
 
             metric.textContent = '0+';
             metric.classList.add('is-counting');
-            const duration = Math.min(1850, 1250 + target * 28);
+            const duration = Math.min(1900, 1200 + Math.sqrt(target) * 45);
             const delay = index * 90;
 
             window.setTimeout(() => {
                 const startTime = performance.now();
                 const tick = now => {
                     const progress = Math.min(1, (now - startTime) / duration);
-                    // 四次缓出：前段增长清晰，末段柔和收住，避免机械匀速感。
                     const eased = 1 - Math.pow(1 - progress, 4);
                     metric.textContent = `${Math.min(target, Math.round(target * eased))}+`;
 
@@ -157,7 +163,6 @@
     };
 
     const queueMetricCounters = () => {
-        // 先让完整页面稳定绘制两帧，确保用户能看到从 0 开始的动画。
         requestAnimationFrame(() => requestAnimationFrame(startMetricCounters));
     };
 
@@ -185,10 +190,11 @@
     const brandLabel = document.getElementById('brand-label');
     const brandSublabel = document.getElementById('brand-sublabel');
     const brandSections = [
+        { selector: '#overview .profile-head h1', label: '蒋子凯', en: 'ABOUT ME', section: '#overview' },
         { selector: '#overview .project-overview .section-title-row h2', label: '项目总览', en: 'PROJECT OVERVIEW', section: '#overview' },
         { selector: '#experience .experience-label h2, #experience .section-title-row h2', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
-        { selector: '#skills .section-heading h2, #skills .section-title-row h2', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' },
-        { selector: '#projects .section-heading h2, #projects .section-title-row h2', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' }
+        { selector: '#projects .section-heading h2, #projects .section-title-row h2', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' },
+        { selector: '#skills .section-heading h2, #skills .section-title-row h2', label: '能力与荣誉', en: 'CAPABILITY & HONORS', section: '#skills' }
     ];
     const detailBrandItems = [...document.querySelectorAll('#projects .detail-card[data-project]')].map(card => ({
         heading: card.querySelector('.detail-head h3'),
@@ -200,12 +206,14 @@
     let activeDetailIndex = 0;
     let brandTimer;
     let brandRaf = 0;
+    let brandMeasureRaf = 0;
     let brandScrollPending = false;
     let programmaticScroll = false;
     let programmaticScrollTimer;
+    let brandSectionPositions = [];
 
-    // 手机滚动性能：只缓存需要观察的节点，并把布局读取限制到约 12fps。
-    // 不在每个 scroll 事件里反复查询 DOM / 读写布局，避免项目详情进入视口后主线程抖动。
+    // 只在载入、尺寸改变或动态内容生成后测量一次位置。
+    // 实时滚动时只读取 scrollY 并比较缓存数字，移动端也能即时切换且不反复触发布局计算。
     const brandSectionNodes = brandSections.map(item => ({
         ...item,
         el: document.querySelector(item.selector)
@@ -237,26 +245,18 @@
     const getBrandCandidate = () => {
         if (!brandLabel) return null;
 
-        const headerBottom = header?.getBoundingClientRect().bottom || getHeaderOffset();
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        const switchLead = isMobile ? 155 : 220;
-        const threshold = headerBottom + switchLead;
+        const thresholdY = window.scrollY + getHeaderOffset() + (isMobile ? 72 : 108);
         let best = null;
 
-        // 节流后才执行这些布局读取；不再 document.querySelector + layout read。
-        for (const item of brandSectionNodes) {
-            const top = item.el.getBoundingClientRect().top;
-            if (top <= threshold && (!best || top > best.top)) {
-                best = { label: item.label, en: item.en, top };
-            }
+        for (const item of brandSectionPositions) {
+            if (item.top > thresholdY) break;
+            best = item;
         }
 
-        const activeDetail = detailBrandItems[activeDetailIndex];
-        if (activeDetail?.heading) {
-            const top = activeDetail.heading.getBoundingClientRect().top;
-            if (top <= threshold && (!best || top > best.top)) {
-                best = { label: activeDetail.label, en: activeDetail.en, top };
-            }
+        if (best?.label === '项目详情') {
+            const activeDetail = detailBrandItems[activeDetailIndex];
+            if (activeDetail) return { label: activeDetail.label, en: activeDetail.en };
         }
 
         return best || { label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO' };
@@ -265,23 +265,33 @@
     const updateBrandByViewport = () => {
         if (brandScrollPending) return;
         brandScrollPending = true;
-        clearTimeout(brandRaf);
-        // 约 80ms 一次，足够完成上下文切换，但不会跟着每一帧滚动抢主线程。
-        brandRaf = window.setTimeout(() => {
+        cancelAnimationFrame(brandRaf);
+        brandRaf = requestAnimationFrame(() => {
             brandScrollPending = false;
             if (programmaticScroll) return;
             const candidate = getBrandCandidate();
             if (candidate) setBrand(candidate.label, candidate.en);
-        }, 80);
+        });
     };
 
-    // 移动端不让顶部品牌切换参与高频滚动；项目详情轮播本身已经负责当前项目状态。
-    // 桌面端保留原有滚动提示。手机端首次进入页面时只计算一次，避免滚动期间反复触发布局读取。
-    if (window.matchMedia('(min-width: 769px)').matches) {
-        addEventListener('scroll', updateBrandByViewport, { passive: true });
-        addEventListener('resize', updateBrandByViewport, { passive: true });
-    }
-    setTimeout(updateBrandByViewport, 0);
+    const measureBrandPositions = () => {
+        cancelAnimationFrame(brandMeasureRaf);
+        brandMeasureRaf = requestAnimationFrame(() => {
+            brandSectionPositions = brandSectionNodes.map(item => ({
+                label: item.label,
+                en: item.en,
+                top: item.el.getBoundingClientRect().top + window.scrollY
+            })).sort((a, b) => a.top - b.top);
+            updateBrandByViewport();
+        });
+    };
+
+    addEventListener('scroll', updateBrandByViewport, { passive: true });
+    addEventListener('resize', measureBrandPositions, { passive: true });
+    addEventListener('orientationchange', measureBrandPositions, { passive: true });
+    window.addEventListener('load', measureBrandPositions, { once: true });
+    document.fonts?.ready?.then(measureBrandPositions);
+    measureBrandPositions();
 const visitCountEl = document.getElementById('visit-count');
     const vercountSitePv = document.getElementById('vercount_value_site_pv');
 
@@ -549,6 +559,7 @@ const visitCountEl = document.getElementById('visit-count');
             activeDetailIndex = detailCarouselIndex;
             detailCarouselTrackIndex = trackIndex;
             updateDetailCarouselUI();
+            updateBrandByViewport();
 
             if (resetTrackIndex !== null) {
                 requestAnimationFrame(() => {
@@ -792,6 +803,8 @@ const visitCountEl = document.getElementById('visit-count');
                     fromUser: false,
                     allowLoop: false
                 });
+                const targetBrand = detailBrandItems[targetIndex];
+                if (targetBrand) setBrand(targetBrand.label, targetBrand.en);
 
                 // 总览点击是“定位”操作，不再依赖轮播卡片的几何位置。
                 // 直接滚动页面真正的 scrollingElement，PC / 手机统一走这一条路径。
@@ -854,6 +867,7 @@ const visitCountEl = document.getElementById('visit-count');
         cards.forEach(card => overviewCards.appendChild(card));
     };
     buildOverview();
+    measureBrandPositions();
 
     // V25：右侧小滚动区使用浏览器原生滚动链。
     // 不再在 touchmove / wheel 中逐帧调用 window.scrollTo，避免手机端主线程抖动；
