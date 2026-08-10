@@ -5516,7 +5516,7 @@ body {
 }
 
 /* 数字在完整页面加载后执行计数，同时用缩放回弹增强 Q 弹感。 */
-.hr-metric strong[data-count-target] {
+.hr-metric strong.has-count-animation {
     display: inline-block;
     min-width: 2ch;
     font-variant-numeric: tabular-nums;
@@ -5531,7 +5531,7 @@ body {
     100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-.hr-metric strong[data-count-target].is-counting {
+.hr-metric strong.has-count-animation.is-counting {
     animation: metric-count-pop 980ms cubic-bezier(.16,1,.3,1) both;
 }
 
