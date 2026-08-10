@@ -115,36 +115,57 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // 代表性数字计数动画：只处理 HTML 中带 data-count-target 的 “+” 指标。
-    // 目标值直接在 index.html 的 data-count-target 属性中修改。
+    // 代表性数字计数动画：等待页面资源全部加载完成后再启动。
+    // 只处理 HTML 中带 data-count-target 的 “+” 指标；目标值在 index.html 修改。
     const animatedMetrics = [...document.querySelectorAll('.hr-metric strong[data-count-target]')];
     const reduceMetricMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    animatedMetrics.forEach(metric => {
-        const target = Math.max(0, Number.parseInt(metric.dataset.countTarget || '', 10));
-        if (!Number.isFinite(target) || !metric.textContent.trim().endsWith('+')) return;
+    const startMetricCounters = () => {
+        animatedMetrics.forEach((metric, index) => {
+            const target = Math.max(0, Number.parseInt(metric.dataset.countTarget || '', 10));
+            if (!Number.isFinite(target) || !metric.textContent.trim().endsWith('+')) return;
 
-        metric.setAttribute('aria-label', `${target}+`);
-        if (reduceMetricMotion) {
-            metric.textContent = `${target}+`;
-            return;
-        }
+            metric.setAttribute('aria-label', `${target}+`);
+            if (reduceMetricMotion) {
+                metric.textContent = `${target}+`;
+                return;
+            }
 
-        metric.textContent = '0+';
-        const duration = Math.min(1600, 1050 + target * 30);
-        const startCounter = startTime => {
-            const tick = now => {
-                const progress = Math.min(1, (now - startTime) / duration);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                metric.textContent = `${Math.round(target * eased)}+`;
-                if (progress < 1) requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        };
+            metric.textContent = '0+';
+            metric.classList.add('is-counting');
+            const duration = Math.min(1850, 1250 + target * 28);
+            const delay = index * 90;
 
-        // 等浏览器先绘制 0+，再开始累加。
-        requestAnimationFrame(() => requestAnimationFrame(startCounter));
-    });
+            window.setTimeout(() => {
+                const startTime = performance.now();
+                const tick = now => {
+                    const progress = Math.min(1, (now - startTime) / duration);
+                    // 四次缓出：前段增长清晰，末段柔和收住，避免机械匀速感。
+                    const eased = 1 - Math.pow(1 - progress, 4);
+                    metric.textContent = `${Math.min(target, Math.round(target * eased))}+`;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(tick);
+                    } else {
+                        metric.textContent = `${target}+`;
+                        window.setTimeout(() => metric.classList.remove('is-counting'), 260);
+                    }
+                };
+                requestAnimationFrame(tick);
+            }, delay);
+        });
+    };
+
+    const queueMetricCounters = () => {
+        // 先让完整页面稳定绘制两帧，确保用户能看到从 0 开始的动画。
+        requestAnimationFrame(() => requestAnimationFrame(startMetricCounters));
+    };
+
+    if (document.readyState === 'complete') {
+        queueMetricCounters();
+    } else {
+        window.addEventListener('load', queueMetricCounters, { once: true });
+    }
 
     const revealObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
@@ -313,11 +334,17 @@ const visitCountEl = document.getElementById('visit-count');
         const indexes = mobileDetailMedia.matches
             ? [activeIndex, (activeIndex - 1 + total) % total, (activeIndex + 1) % total]
             : detailCards.map((_, index) => index);
-        new Set(indexes).forEach(index => {
-            const card = detailCards[index];
-            const image = card?.dataset.detailBgImage;
-            if (card && image && !card.style.getPropertyValue('--detail-bg-image')) {
-                card.style.setProperty('--detail-bg-image', image);
+        const visibleIndexes = new Set(indexes);
+
+        detailCards.forEach((card, index) => {
+            const image = card.dataset.detailBgImage;
+            if (visibleIndexes.has(index)) {
+                if (image && !card.style.getPropertyValue('--detail-bg-image')) {
+                    card.style.setProperty('--detail-bg-image', image);
+                }
+            } else if (mobileDetailMedia.matches) {
+                // 非相邻卡片不参与当前绘制，减少长轨道的图像合成压力。
+                card.style.removeProperty('--detail-bg-image');
             }
         });
     };
@@ -355,6 +382,9 @@ const visitCountEl = document.getElementById('visit-count');
     let detailCarouselPointerStartX = 0;
     let detailCarouselPointerStartY = 0;
     let detailCarouselPointerMoved = false;
+    const nativeDetailScroll = mobileDetailMedia.matches;
+    let nativeDetailScrollTimer = 0;
+    let nativeDetailScrollStartLeft = 0;
 
     const getDetailStep = () => detailCardWidth + detailCardGap;
     const getDetailTrackOffset = (trackIndex, dragOffset = 0) => {
@@ -365,6 +395,19 @@ const visitCountEl = document.getElementById('visit-count');
 
     const setDetailTrackPosition = (trackIndex, animate = true, dragOffset = 0) => {
         if (!detailTrack || !detailViewport) return;
+
+        if (nativeDetailScroll) {
+            const viewportWidth = detailViewport.clientWidth || detailCarouselWidth || 1;
+            const sidePeek = Math.max(0, (viewportWidth - detailCardWidth) / 2);
+            const left = Math.max(0, trackIndex * getDetailStep() - sidePeek - dragOffset);
+            detailTrack.style.transition = 'none';
+            detailTrack.style.transform = 'none';
+            if (Math.abs(detailViewport.scrollLeft - left) > 1) {
+                detailViewport.scrollTo({ left, behavior: animate ? 'smooth' : 'auto' });
+            }
+            return;
+        }
+
         const transition = animate ? 'transform 300ms cubic-bezier(0.22, 0.8, 0.18, 1)' : 'none';
         const transform = `translate3d(${getDetailTrackOffset(trackIndex, dragOffset)}px, 0, 0)`;
         if (detailTrack.style.transition !== transition) detailTrack.style.transition = transition;
@@ -449,8 +492,20 @@ const visitCountEl = document.getElementById('visit-count');
         detailDots.querySelectorAll('button').forEach(dot => {
             dot.addEventListener('click', () => goToDetailProject(Number(dot.dataset.detailIndex)));
         });
-        detailPrev?.addEventListener('click', () => goToDetailProject(detailCarouselIndex - 1));
-        detailNext?.addEventListener('click', () => goToDetailProject(detailCarouselIndex + 1));
+        const pressDetailButton = button => {
+            if (!button) return;
+            button.classList.remove('is-pressed');
+            requestAnimationFrame(() => button.classList.add('is-pressed'));
+            window.setTimeout(() => button.classList.remove('is-pressed'), 280);
+        };
+        detailPrev?.addEventListener('click', () => {
+            pressDetailButton(detailPrev);
+            goToDetailProject(detailCarouselIndex - 1);
+        });
+        detailNext?.addEventListener('click', () => {
+            pressDetailButton(detailNext);
+            goToDetailProject(detailCarouselIndex + 1);
+        });
 
         const resizeDetailCarousel = () => {
             cancelAnimationFrame(detailCarouselRaf);
@@ -469,7 +524,59 @@ const visitCountEl = document.getElementById('visit-count');
         };
         addEventListener('resize', resizeDetailCarousel);
 
+        const syncNativeDetailIndex = () => {
+            if (!nativeDetailScroll || !detailCards.length) return;
+            const viewportWidth = detailViewport.clientWidth || 1;
+            const sidePeek = Math.max(0, (viewportWidth - detailCardWidth) / 2);
+            const maxTrackIndex = detailCards.length + 1;
+            const trackIndex = Math.max(0, Math.min(
+                maxTrackIndex,
+                Math.round((detailViewport.scrollLeft + sidePeek) / Math.max(1, getDetailStep()))
+            ));
+
+            let targetIndex = trackIndex - 1;
+            let resetTrackIndex = null;
+            if (trackIndex === 0) {
+                targetIndex = detailCards.length - 1;
+                resetTrackIndex = detailCards.length;
+            } else if (trackIndex === maxTrackIndex) {
+                targetIndex = 0;
+                resetTrackIndex = 1;
+            }
+
+            detailCarouselIndex = Math.max(0, Math.min(detailCards.length - 1, targetIndex));
+            activeDetailIndex = detailCarouselIndex;
+            detailCarouselTrackIndex = trackIndex;
+            updateDetailCarouselUI();
+
+            if (resetTrackIndex !== null) {
+                requestAnimationFrame(() => {
+                    detailCarouselTrackIndex = resetTrackIndex;
+                    setDetailTrackPosition(resetTrackIndex, false);
+                });
+            }
+
+            window.setTimeout(() => {
+                detailCarouselSuppressClick = false;
+            }, 160);
+        };
+
+        if (nativeDetailScroll) {
+            detailViewport.addEventListener('scroll', () => {
+                if (Math.abs(detailViewport.scrollLeft - nativeDetailScrollStartLeft) > 6) {
+                    detailCarouselSuppressClick = true;
+                }
+                clearTimeout(nativeDetailScrollTimer);
+                nativeDetailScrollTimer = window.setTimeout(syncNativeDetailIndex, 72);
+            }, { passive: true });
+        }
+
         detailViewport.addEventListener('pointerdown', event => {
+            if (nativeDetailScroll) {
+                nativeDetailScrollStartLeft = detailViewport.scrollLeft;
+                detailCarouselSuppressClick = false;
+                return;
+            }
             if (event.button !== undefined && event.button !== 0) return;
             detailCarouselDragging = true;
             detailViewport.classList.add('is-dragging');
