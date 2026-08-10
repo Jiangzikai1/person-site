@@ -5330,3 +5330,207 @@ body {
         font-size: clamp(.62rem, 3.1vw, .74rem) !important;
     }
 }
+
+
+/* V63 · 首屏紧凑化、原生移动轮播与弹性质感 */
+/* 电脑端：名称在左、简介在右，压低三行项目卡的总高度。 */
+@media (min-width: 769px) {
+    .overview-section {
+        padding-top: 18px;
+        padding-bottom: 26px;
+    }
+
+    .project-overview {
+        padding: 14px 18px 12px;
+    }
+
+    .project-overview .section-title-row {
+        margin-bottom: 10px;
+    }
+
+    .overview-cards {
+        gap: 8px 10px !important;
+    }
+
+    .project-overview-row,
+    .project-overview-row:first-child,
+    .project-overview-row:nth-child(odd) {
+        grid-template-columns: 22px minmax(0, 1fr) !important;
+        min-height: 76px !important;
+        padding: 9px 10px 21px !important;
+        border-radius: 12px !important;
+    }
+
+    .project-overview-row .overview-row-main {
+        display: grid;
+        grid-template-columns: minmax(118px, .9fr) minmax(0, 1.25fr);
+        align-items: center;
+        gap: 12px;
+    }
+
+    .project-overview-row .overview-row-title h3 {
+        max-height: 2.5em !important;
+        font-size: clamp(.72rem, .95vw, .86rem) !important;
+        line-height: 1.25 !important;
+    }
+
+    .project-overview-row .overview-row-tags {
+        margin-top: 3px;
+    }
+
+    .project-overview-row .overview-row-main p {
+        margin: 0;
+        font-size: .68rem;
+        line-height: 1.38;
+        -webkit-line-clamp: 2;
+    }
+
+    .project-overview-row .overview-row-meta {
+        right: 9px !important;
+        bottom: 6px !important;
+        font-size: .55rem;
+    }
+
+    .experience-strip {
+        margin-top: 10px;
+        padding: 12px 18px;
+        gap: 9px;
+    }
+
+    .experience-track {
+        gap: 10px;
+        padding-top: 24px;
+    }
+
+    .experience-item {
+        padding: 12px;
+    }
+}
+
+/* 手机端：保留两列，但压缩上下留白与说明行数。 */
+@media (max-width: 768px) {
+    .overview-cards {
+        gap: 7px !important;
+    }
+
+    .project-overview-row,
+    .project-overview-row:first-child,
+    .project-overview-row:nth-child(odd) {
+        min-height: 92px !important;
+        padding: 7px 6px 21px !important;
+        border-radius: 11px !important;
+    }
+
+    .project-overview-row .overview-row-title h3 {
+        max-height: 2.55em !important;
+        margin-top: 1px;
+        line-height: 1.27 !important;
+    }
+
+    .project-overview-row .overview-row-tags {
+        margin-top: 3px;
+    }
+
+    .project-overview-row .overview-row-main p {
+        margin-top: 3px;
+        font-size: .56rem;
+        line-height: 1.25;
+        -webkit-line-clamp: 1;
+    }
+
+    .project-overview-row .overview-row-meta {
+        bottom: 5px !important;
+    }
+}
+
+/* 手机详情轮播交给浏览器原生滚动与 scroll-snap，避免 JS 每帧搬运长轨道。 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    #project-detail-carousel .detail-carousel-viewport {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        overscroll-behavior-inline: contain;
+        touch-action: pan-x pan-y !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #project-detail-carousel .detail-carousel-viewport::-webkit-scrollbar {
+        display: none;
+    }
+
+    #project-detail-carousel .detail-list {
+        transform: none !important;
+        transition: none !important;
+        will-change: auto !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card {
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+        transform: none !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+        transition: opacity 140ms linear !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next {
+        opacity: .55 !important;
+        transform: none !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* 切换按钮点击时短暂变色并下压，鼠标、触屏和键盘均有反馈。 */
+@keyframes detail-button-press {
+    0% {
+        color: var(--text);
+        background: color-mix(in srgb, var(--surface-solid) 48%, transparent);
+        transform: translateY(-50%) scale(1);
+    }
+    45% {
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent-soft) 82%, transparent);
+        transform: translateY(-50%) scale(.88);
+    }
+    100% {
+        color: var(--text);
+        background: color-mix(in srgb, var(--surface-solid) 48%, transparent);
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+.detail-carousel-btn:active,
+.detail-carousel-btn.is-pressed {
+    border-color: color-mix(in srgb, var(--accent) 38%, transparent) !important;
+    color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent-soft) 82%, transparent) !important;
+    animation: detail-button-press 280ms cubic-bezier(.2,.9,.25,1);
+}
+
+/* 数字在完整页面加载后执行计数，同时用缩放回弹增强 Q 弹感。 */
+.hr-metric strong[data-count-target] {
+    display: inline-block;
+    min-width: 2ch;
+    font-variant-numeric: tabular-nums;
+    transform-origin: center bottom;
+}
+
+@keyframes metric-count-pop {
+    0% { transform: translateY(5px) scale(.82); opacity: .58; }
+    38% { transform: translateY(-2px) scale(1.11); opacity: 1; }
+    62% { transform: translateY(1px) scale(.96); }
+    80% { transform: translateY(-1px) scale(1.035); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.hr-metric strong[data-count-target].is-counting {
+    animation: metric-count-pop 980ms cubic-bezier(.16,1,.3,1) both;
+}
