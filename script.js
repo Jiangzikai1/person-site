@@ -332,33 +332,71 @@ const visitCountEl = document.getElementById('visit-count');
     // 手机端只解码当前项目及相邻项目图片，避免进入页面时同时加载全部大图。
     // 桌面端仍保留完整预载，确保宽屏轮播两侧预览即时显示。
     const mobileDetailMedia = window.matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)');
+    const detailImagePreloads = new Map();
+
+    const getDetailImageUrl = value => {
+        const match = String(value || '').match(/url\((['"]?)(.*?)\1\)/);
+        return match?.[2] || '';
+    };
+
+    const preloadDetailImage = (cssImage, priority = 'auto') => {
+        if (!cssImage || detailImagePreloads.has(cssImage)) return;
+        const url = getDetailImageUrl(cssImage);
+        if (!url) return;
+
+        const image = new Image();
+        image.decoding = 'async';
+        if ('fetchPriority' in image) image.fetchPriority = priority;
+        image.src = url;
+        const decoded = typeof image.decode === 'function'
+            ? image.decode().catch(() => undefined)
+            : Promise.resolve();
+        detailImagePreloads.set(cssImage, { image, decoded });
+    };
+
     detailCards.forEach(card => {
         const image = card.style.getPropertyValue('--detail-bg-image').trim();
-        if (image) card.dataset.detailBgImage = image;
-        if (mobileDetailMedia.matches) card.style.removeProperty('--detail-bg-image');
+        if (image) {
+            card.dataset.detailBgImage = image;
+            // 不再在移动端切换时删除背景变量，避免下一张卡临时重新生成图片层。
+            card.style.setProperty('--detail-bg-image', image);
+        }
+
+        if (!card.querySelector(':scope > .detail-focus-ring')) {
+            const ring = document.createElement('span');
+            ring.className = 'detail-focus-ring';
+            ring.setAttribute('aria-hidden', 'true');
+            card.appendChild(ring);
+        }
     });
 
     const hydrateDetailImages = (activeIndex = 0) => {
         const total = detailCards.length;
         if (!total) return;
-        const indexes = mobileDetailMedia.matches
-            ? [activeIndex, (activeIndex - 1 + total) % total, (activeIndex + 1) % total]
-            : detailCards.map((_, index) => index);
-        const visibleIndexes = new Set(indexes);
 
-        detailCards.forEach((card, index) => {
-            const image = card.dataset.detailBgImage;
-            if (visibleIndexes.has(index)) {
-                if (image && !card.style.getPropertyValue('--detail-bg-image')) {
-                    card.style.setProperty('--detail-bg-image', image);
-                }
-            } else if (mobileDetailMedia.matches) {
-                // 非相邻卡片不参与当前绘制，减少长轨道的图像合成压力。
-                card.style.removeProperty('--detail-bg-image');
-            }
+        const orderedIndexes = [
+            activeIndex,
+            (activeIndex + 1) % total,
+            (activeIndex - 1 + total) % total
+        ];
+        orderedIndexes.forEach((index, order) => {
+            const card = detailCards[index];
+            const image = card?.dataset.detailBgImage;
+            if (!image) return;
+            card.style.setProperty('--detail-bg-image', image);
+            preloadDetailImage(image, order < 2 ? 'high' : 'auto');
         });
     };
     hydrateDetailImages(0);
+
+    const warmAllDetailImages = () => {
+        detailCards.forEach(card => preloadDetailImage(card.dataset.detailBgImage, 'auto'));
+    };
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(warmAllDetailImages, { timeout: 1200 });
+    } else {
+        window.setTimeout(warmAllDetailImages, 220);
+    }
 
     /*
      * 项目详情横向轮播：
@@ -522,7 +560,7 @@ const visitCountEl = document.getElementById('visit-count');
             cancelAnimationFrame(detailCarouselRaf);
             detailCarouselRaf = requestAnimationFrame(() => {
                 detailCarouselWidth = detailViewport.clientWidth || 1;
-                detailCardWidth = Math.min(detailCarouselWidth * (window.matchMedia('(max-width: 768px)').matches ? 0.84 : 0.78), detailCarouselWidth - 24);
+                detailCardWidth = Math.min(detailCarouselWidth * (window.matchMedia('(max-width: 768px)').matches ? 0.88 : 0.78), detailCarouselWidth - 20);
                 detailCardGap = window.matchMedia('(max-width: 768px)').matches ? 12 : 18;
                 detailTrack.style.width = `${(detailCardWidth + detailCardGap) * (detailCards.length + 2)}px`;
                 detailTrack.querySelectorAll('.detail-card').forEach(card => {
@@ -734,6 +772,46 @@ const visitCountEl = document.getElementById('visit-count');
         updateDetailCarouselIndex(0, { animate: false, fromUser: false });
     }
 
+    // 项目详情进入视口后，连续 8 秒没有触摸/拖动/点击则自动向左切换一张。
+    const detailSectionForAutoplay = document.getElementById('projects');
+    let detailAutoplayTimer = 0;
+    let detailSectionVisible = false;
+
+    const scheduleDetailAutoplay = () => {
+        clearTimeout(detailAutoplayTimer);
+        if (!detailSectionVisible || document.hidden || detailCards.length < 2) return;
+
+        detailAutoplayTimer = window.setTimeout(() => {
+            const modalOpen = document.getElementById('project-modal')?.classList.contains('active');
+            if (modalOpen || detailCarouselDragging) {
+                scheduleDetailAutoplay();
+                return;
+            }
+            goToDetailProject(detailCarouselIndex + 1, {
+                animate: true,
+                fromUser: false,
+                allowLoop: true
+            });
+            updateBrandByViewport();
+            scheduleDetailAutoplay();
+        }, 8000);
+    };
+
+    const markDetailInteraction = () => scheduleDetailAutoplay();
+    ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(type => {
+        detailCarousel?.addEventListener(type, markDetailInteraction, { passive: type !== 'keydown' });
+    });
+    detailViewport?.addEventListener('scroll', markDetailInteraction, { passive: true });
+    document.addEventListener('visibilitychange', scheduleDetailAutoplay);
+
+    if (detailSectionForAutoplay) {
+        const detailAutoplayObserver = new IntersectionObserver(entries => {
+            detailSectionVisible = entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.28);
+            scheduleDetailAutoplay();
+        }, { threshold: [0, 0.28, 0.55] });
+        detailAutoplayObserver.observe(detailSectionForAutoplay);
+    }
+
     const projectSection = document.getElementById('projects');
     const escapeText = (value) => String(value ?? '').trim();
     const formatOverviewDate = (value) => {
@@ -759,7 +837,7 @@ const visitCountEl = document.getElementById('visit-count');
         detailFocusStartTimer = window.setTimeout(() => {
             target.classList.add('detail-card-focus');
             detailFocusEndTimer = window.setTimeout(() => target.classList.remove('detail-card-focus'), 720);
-        }, 460);
+        }, 340);
     };
 
     const buildOverview = () => {
