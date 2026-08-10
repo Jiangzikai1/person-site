@@ -5960,3 +5960,66 @@ body.content-protected [contenteditable="true"] {
     user-select: text;
     -webkit-touch-callout: default;
 }
+
+
+/* V66 · carousel warm rendering / complete focus ring / mobile height trim */
+#project-detail-carousel .detail-focus-ring {
+    position: absolute;
+    inset: 3px;
+    z-index: 9;
+    display: block;
+    border: 2px solid transparent;
+    border-radius: calc(var(--radius-xl) - 3px);
+    opacity: 0;
+    pointer-events: none;
+    box-sizing: border-box;
+    transition: opacity 140ms ease, border-color 140ms ease;
+}
+#project-detail-carousel .detail-card-focus {
+    outline: none !important;
+    border-color: var(--line) !important;
+    box-shadow: none !important;
+}
+#project-detail-carousel .detail-card-focus > .detail-focus-ring {
+    border-color: color-mix(in srgb, var(--accent) 82%, transparent);
+    opacity: 1;
+}
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    /* 相邻卡在滑动开始前就拥有已解码、已绘制的背景，激活时只改变透明度。 */
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev::before,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next::before,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone::before {
+        opacity: .22 !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+    }
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone::after {
+        opacity: .42 !important;
+    }
+
+    /* 仅收紧外层与大块留白，控件内部结构和阅读间距基本保持。 */
+    #project-detail-carousel .detail-list > .detail-card {
+        padding: 14px 12px 46px !important;
+        gap: 9px !important;
+    }
+    #project-detail-carousel .detail-head {
+        margin-bottom: 10px;
+    }
+    #project-detail-carousel .detail-summary {
+        margin-top: 0;
+        margin-bottom: 18px;
+        line-height: 1.5;
+    }
+    #project-detail-carousel .capability-grid {
+        gap: 12px;
+    }
+    #project-detail-carousel .capability {
+        padding: 14px;
+    }
+    #project-detail-carousel .detail-card > .detail-view-hint {
+        bottom: 10px !important;
+    }
+}
