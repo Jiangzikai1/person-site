@@ -5767,3 +5767,86 @@ body {
         opacity: .88 !important;
     }
 }
+
+
+/* V65 · 05 卡片与经历时间轴精确对齐 */
+/* 第五张卡明确回到第一列，并完全沿用其他卡片的尺寸与拉伸规则。 */
+.overview-cards > .project-overview-row:nth-child(5) {
+    grid-column: 1 !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* 统一品牌行、编号和标题基线，修复 05 特殊品牌样式造成的视觉偏移。 */
+.project-overview-row .overview-row-index {
+    align-self: start !important;
+    justify-self: start;
+    padding-top: 2px !important;
+    line-height: 1 !important;
+}
+
+.project-overview-row .overview-row-topline {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 17px;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.project-overview-row .overview-row-brand,
+.project-overview-row[data-project="wuzhou-chengtou"] .overview-row-title .overview-row-brand {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 17px;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 17px !important;
+}
+
+.project-overview-row .overview-row-brand .megmeet_logo,
+.project-overview-row .overview-row-brand .chengtou_logo,
+.project-overview-row[data-project="wuzhou-chengtou"] .overview-row-title .overview-row-brand .chengtou_logo {
+    display: inline-flex !important;
+    align-items: center !important;
+    width: auto !important;
+    min-height: 17px;
+    margin: 0 !important;
+    line-height: 17px !important;
+}
+
+.project-overview-row .overview-row-title h3,
+.project-overview-row[data-project="wuzhou-chengtou"] .overview-row-title h3 {
+    display: block !important;
+    margin: 3px 0 0 !important;
+}
+
+/* 桌面横轴位于 track 顶部 8px；节点中心同步对齐到 8px。 */
+@media (min-width: 769px) {
+    .experience-track {
+        padding-top: 24px;
+    }
+
+    .experience-track::before {
+        top: 8px !important;
+    }
+
+    .experience-item::before {
+        top: -22px !important;
+        transform: translateX(-50%) !important;
+    }
+}
+
+/* 手机竖轴与节点中心统一在距轨道左侧 7px 的位置。 */
+@media (max-width: 768px) {
+    .experience-track::before {
+        left: 7px !important;
+    }
+
+    .experience-item::before {
+        left: -27px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+    }
+}
