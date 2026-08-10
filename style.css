@@ -5731,3 +5731,39 @@ body {
         -webkit-filter: blur(5px) !important;
     }
 }
+
+
+/* V64.1 · 仅当前详情卡绘制双层背景 */
+#project-detail-carousel .detail-card::before,
+#project-detail-carousel .detail-card::after {
+    transition: opacity 180ms ease !important;
+}
+
+#project-detail-carousel .detail-list > .detail-card:not(.is-carousel-active)::before,
+#project-detail-carousel .detail-list > .detail-card:not(.is-carousel-active)::after {
+    opacity: 0 !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+}
+
+#project-detail-carousel .detail-list > .detail-card.is-carousel-active::before {
+    opacity: .62 !important;
+    filter: blur(9px) !important;
+    -webkit-filter: blur(9px) !important;
+}
+
+#project-detail-carousel .detail-list > .detail-card.is-carousel-active::after {
+    opacity: .94 !important;
+}
+
+@media (max-width: 768px) {
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active::before {
+        opacity: .52 !important;
+        filter: blur(6px) !important;
+        -webkit-filter: blur(6px) !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active::after {
+        opacity: .88 !important;
+    }
+}
