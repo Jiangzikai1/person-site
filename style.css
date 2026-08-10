@@ -4954,3 +4954,91 @@ body.modal-open {
         will-change: auto !important;
     }
 }
+
+
+/* Mobile project-detail performance fixes (2026-08) */
+html,
+body {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+.project-detail-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 760px;
+}
+
+.detail-carousel-viewport {
+    overscroll-behavior-x: contain;
+    touch-action: pan-y pinch-zoom;
+}
+
+.detail-list,
+.detail-card,
+.detail-card::before,
+.detail-card::after {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.detail-list {
+    will-change: transform;
+}
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    .site-header,
+    .profile-panel,
+    .project-overview,
+    .experience-strip,
+    .detail-card,
+    .detail-card::after,
+    .modal-overlay {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .detail-card {
+        contain: layout paint style;
+        transform: translateZ(0);
+        transition: border-color .18s ease;
+    }
+
+    .detail-card::before {
+        transform: none;
+        transition: opacity .18s ease;
+    }
+
+    .detail-card::after {
+        background: linear-gradient(
+            90deg,
+            var(--surface-solid) 0%,
+            color-mix(in srgb, var(--surface-solid) 94%, transparent) 48%,
+            color-mix(in srgb, var(--surface-solid) 62%, transparent) 100%
+        );
+    }
+
+    .hover-lift,
+    .hover-lift:hover,
+    .hover-lift:active,
+    .detail-card:hover,
+    .detail-card:active {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .reveal,
+    .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .detail-list,
+    .detail-card,
+    .detail-card::before,
+    .detail-card::after {
+        transition-duration: .01ms !important;
+    }
+}
