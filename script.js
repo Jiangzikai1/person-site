@@ -736,6 +736,31 @@ const visitCountEl = document.getElementById('visit-count');
 
     const projectSection = document.getElementById('projects');
     const escapeText = (value) => String(value ?? '').trim();
+    const formatOverviewDate = (value) => {
+        const source = escapeText(value);
+        const years = [...source.matchAll(/(?:19|20)\d{2}/g)].map(match => match[0]);
+        const uniqueYears = [...new Set(years)];
+        if (!uniqueYears.length) return source;
+        if (source.includes('至今')) return `${uniqueYears[0]}–至今`;
+        if (uniqueYears.length === 1) return uniqueYears[0];
+        return `${uniqueYears[0]}–${uniqueYears[uniqueYears.length - 1]}`;
+    };
+
+    let detailFocusStartTimer;
+    let detailFocusEndTimer;
+    const focusDetailCard = (index) => {
+        clearTimeout(detailFocusStartTimer);
+        clearTimeout(detailFocusEndTimer);
+        detailTrack?.querySelectorAll('.detail-card-focus').forEach(card => card.classList.remove('detail-card-focus'));
+
+        const target = detailCards[index];
+        if (!target) return;
+        // 等轮播完成位移后再高亮真实卡片，避免描边落在克隆卡片或滑动路径上。
+        detailFocusStartTimer = window.setTimeout(() => {
+            target.classList.add('detail-card-focus');
+            detailFocusEndTimer = window.setTimeout(() => target.classList.remove('detail-card-focus'), 720);
+        }, 460);
+    };
 
     const buildOverview = () => {
         if (!overviewCards || !detailCards.length) return;
@@ -751,7 +776,7 @@ const visitCountEl = document.getElementById('visit-count');
             const tagEls = [...detailCard.querySelectorAll('.detail-head .tag')];
 
             const title = titleEl ? titleEl.innerHTML.trim() : '未命名项目';
-            const date = escapeText(dateEl?.textContent);
+            const date = formatOverviewDate(dateEl?.textContent);
             const summary = escapeText(summaryEl?.textContent);
             const tags = tagEls.slice(0, 2).map(el => el.outerHTML).join('');
             const brandEl = titleEl?.querySelector('.megmeet_logo, .chengtou_logo');
@@ -790,6 +815,7 @@ const visitCountEl = document.getElementById('visit-count');
             const jumpToDetail = (event) => {
                 event?.preventDefault?.();
                 event?.stopPropagation?.();
+                card.blur();
 
                 // 关键：不要通过 querySelector 找目标卡片再 indexOf。
                 // 轮播会在 detailTrack 前后插入 05/01 克隆卡片，05 的 querySelector
@@ -822,9 +848,7 @@ const visitCountEl = document.getElementById('visit-count');
                     // + sticky header 场景下出现“调用了但页面位置不变”。
                     scroller.scrollTo({ top: targetTop, behavior: 'smooth' });
 
-                    const activeTarget = detailCards[targetIndex];
-                    activeTarget?.classList.add('detail-card-focus');
-                    window.setTimeout(() => activeTarget?.classList.remove('detail-card-focus'), 900);
+                    focusDetailCard(targetIndex);
                 };
 
                 // 等轮播 transform 写入后再滚页面，但不再等待完整动画。
@@ -1200,5 +1224,45 @@ const visitCountEl = document.getElementById('visit-count');
             console.error('NotifyMe push failed:', error);
         }
     });
+
+
+    // 前端内容保护只能提高直接复制门槛，不能替代服务端保护或阻止专业抓取。
+    document.body.classList.add('content-protected');
+    const editableSelector = 'input, textarea, select, [contenteditable="true"]';
+    const isEditableTarget = target => target instanceof Element && Boolean(target.closest(editableSelector));
+    let protectionNoticeAt = 0;
+    const showProtectionNotice = () => {
+        const now = Date.now();
+        if (now - protectionNoticeAt < 1200) return;
+        protectionNoticeAt = now;
+        showToast('页面内容已开启保护', 1600);
+    };
+    const blockProtectedAction = event => {
+        if (isEditableTarget(event.target)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        showProtectionNotice();
+    };
+
+    ['contextmenu', 'copy', 'cut', 'paste', 'selectstart', 'dragstart'].forEach(type => {
+        document.addEventListener(type, blockProtectedAction, { capture: true });
+    });
+
+    document.addEventListener('keydown', event => {
+        const key = String(event.key || '').toLowerCase();
+        const modifier = event.ctrlKey || event.metaKey;
+        const developerShortcut =
+            event.key === 'F12' ||
+            (modifier && event.shiftKey && ['i', 'j', 'c', 'k'].includes(key)) ||
+            (event.metaKey && event.altKey && ['i', 'j', 'c', 'u'].includes(key));
+        const sourceShortcut = modifier && ['u', 's', 'p'].includes(key);
+        const contentShortcut = modifier && ['a', 'c', 'x', 'v'].includes(key) && !isEditableTarget(event.target);
+
+        if (!developerShortcut && !sourceShortcut && !contentShortcut) return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        showProtectionNotice();
+    }, true);
 
 })();
