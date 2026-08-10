@@ -115,9 +115,14 @@
                         <div class="hr-snapshot" aria-label="HR 快速了解">
                             <div class="hr-snapshot-head">
                             </div>
+                            <!--
+                                带 + 数字的动画目标值在 data-count-target 中修改。
+                                例如改成 5+：data-count-target="5"，同时将标签内容改为 5+。
+                                不带 + 的数字保持静态，不会执行计数动画。
+                            -->
                             <div class="hr-metrics">
-                                <div class="hr-metric"><strong>3+</strong><span>年相关经验</span></div>
-                                <div class="hr-metric"><strong>10+</strong><span>参与项目</span></div>
+                                <div class="hr-metric"><strong data-count-target="3">3+</strong><span>年相关经验</span></div>
+                                <div class="hr-metric"><strong data-count-target="10">10+</strong><span>参与项目</span></div>
                                 <div class="hr-metric"><strong>4</strong><span>核心系统</span></div>
                                 <div class="hr-metric"><strong>2</strong><span>国家 / 地区</span></div>
                             </div>
