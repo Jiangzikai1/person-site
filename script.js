@@ -493,6 +493,8 @@ const visitCountEl = document.getElementById('visit-count');
                 if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
                 if (Math.abs(dx) <= Math.abs(dy)) {
                     detailCarouselDragging = false;
+                    detailViewport.classList.remove('is-dragging');
+                    detailViewport.releasePointerCapture?.(event.pointerId);
                     return;
                 }
                 detailCarouselDragHorizontal = true;
