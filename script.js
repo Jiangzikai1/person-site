@@ -402,6 +402,7 @@ const visitCountEl = document.getElementById('visit-count');
             const left = Math.max(0, trackIndex * getDetailStep() - sidePeek - dragOffset);
             detailTrack.style.transition = 'none';
             detailTrack.style.transform = 'none';
+            detailViewport.style.scrollBehavior = animate ? 'smooth' : 'auto';
             if (Math.abs(detailViewport.scrollLeft - left) > 1) {
                 detailViewport.scrollTo({ left, behavior: animate ? 'smooth' : 'auto' });
             }
