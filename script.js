@@ -611,7 +611,37 @@ const visitCountEl = document.getElementById('visit-count');
             }, 160);
         };
 
+        let nativeTapStartX = 0;
+        let nativeTapStartY = 0;
+        let nativeTapPointerId = null;
+
         if (nativeDetailScroll) {
+            detailViewport.addEventListener('pointerdown', event => {
+                nativeTapStartX = event.clientX;
+                nativeTapStartY = event.clientY;
+                nativeTapPointerId = event.pointerId;
+                nativeDetailScrollStartLeft = detailViewport.scrollLeft;
+                detailCarouselSuppressClick = false;
+            }, { passive: true });
+
+            detailViewport.addEventListener('pointerup', event => {
+                if (nativeTapPointerId !== event.pointerId) return;
+                const dx = Math.abs(event.clientX - nativeTapStartX);
+                const dy = Math.abs(event.clientY - nativeTapStartY);
+                nativeTapPointerId = null;
+
+                // 移动端原生滚动过程中 click 可能被浏览器延迟/取消。
+                // 对“真正的轻点”直接走详情入口，避免第 05 项在循环边界失去 click。
+                if (dx < 8 && dy < 8) {
+                    const activeCard = detailCards[detailCarouselIndex];
+                    if (activeCard && !event.target.closest('a,button')) {
+                        detailCarouselSuppressClick = true;
+                        openModalFromCard(activeCard);
+                        window.setTimeout(() => { detailCarouselSuppressClick = false; }, 180);
+                    }
+                }
+            }, { passive: true });
+
             detailViewport.addEventListener('scroll', () => {
                 if (Math.abs(detailViewport.scrollLeft - nativeDetailScrollStartLeft) > 6) {
                     detailCarouselSuppressClick = true;
@@ -1039,10 +1069,21 @@ const visitCountEl = document.getElementById('visit-count');
 
     let modalHistoryActive = false;
 
+    const getCanonicalDetailCard = (cardOrId) => {
+        const id = typeof cardOrId === 'string'
+            ? cardOrId
+            : cardOrId?.dataset?.project;
+        if (!id) return null;
+        // 永远从初始 detailCards 中取“真卡片”，不依赖 querySelector。
+        // 轮播运行后会额外插入 01/05 克隆卡，尤其是 05 在循环边界时，
+        // querySelector 可能命中克隆节点，导致详情数据被移除后无法打开。
+        return detailCards.find(item => item.dataset.project === id) || null;
+    };
+
     const openModalFromCard = (card) => {
-        const id = card.getAttribute('data-project');
-        const source = document.querySelector(`#projects .detail-card[data-project="${CSS.escape(id)}"]`);
+        const source = getCanonicalDetailCard(card);
         if (!source) return;
+        const id = source.dataset.project;
 
         // 弹窗标题同样保留 .megmeet_logo，避免 textContent 把品牌样式剥掉。
         const title = source.querySelector('.detail-head h3')?.innerHTML.trim() || '项目详情';
@@ -1099,10 +1140,12 @@ const visitCountEl = document.getElementById('visit-count');
             const targetIndex = detailCards.findIndex(item => item.dataset.project === id);
             if (targetIndex < 0) return;
 
-            // 当前主卡：打开项目详情弹窗。
-            if (targetIndex === detailCarouselIndex && !card.classList.contains('is-carousel-clone')) {
+            // 当前项目无论是原始卡还是轮播边界克隆，都统一打开“真卡片”的详情。
+            // 这条路径不再依赖 DOM 克隆节点，因此第 05 项也能稳定打开。
+            if (targetIndex === detailCarouselIndex) {
                 event.preventDefault();
-                openModalFromCard(card);
+                event.stopPropagation();
+                openModalFromCard(detailCards[targetIndex]);
                 return;
             }
 
