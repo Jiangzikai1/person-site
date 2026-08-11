@@ -6023,3 +6023,40 @@ body.content-protected [contenteditable="true"] {
         bottom: 10px !important;
     }
 }
+
+/* V67 · 手机项目轮播跟手优化
+   - 允许一次惯性手势自然经过多张卡，不再强制逐卡停顿；
+   - 原生滚动由手势控制，只有按钮/导航触发时才由 JS 请求平滑滚动；
+   - 手机只绘制一层背景，取消激活瞬间的 blur 合成，避免“切换后再加载”的观感。 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    #project-detail-carousel .detail-carousel-viewport {
+        scroll-behavior: auto !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card {
+        scroll-snap-stop: normal;
+        contain: style;
+    }
+
+    #project-detail-carousel .detail-card::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    #project-detail-carousel .detail-card::after {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: translateZ(0) !important;
+        transition: opacity 100ms linear !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone::after {
+        opacity: .34 !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active::after {
+        opacity: .88 !important;
+    }
+}
