@@ -21,7 +21,14 @@
 
     
     <script defer src="https://cn.vercount.one/js"></script>
-    <link rel="stylesheet" href="style.css?v=20260811-1">
+
+    <!-- 手机横滑前即请求全部项目背景，避免滑到卡片后才开始网络加载。 -->
+    <link rel="preload" as="image" href="assets/projects/泰国.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="assets/projects/欧力德.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="assets/projects/岩谷.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="assets/projects/oracle-bg.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="assets/projects/充电桩.jpg" fetchpriority="high">
+    <link rel="stylesheet" href="style.css?v=20260811-2">
     
 </head>
 <body>
