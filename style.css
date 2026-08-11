@@ -6060,3 +6060,45 @@ body.content-protected [contenteditable="true"] {
         opacity: .88 !important;
     }
 }
+
+
+/* V68 · 移动端项目定位与背景即时显示 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    /* 总览结束与详情标题之间只保留一个紧凑节奏；总览点击仍对齐 section 顶部。 */
+    .overview-section {
+        padding-bottom: 12px !important;
+    }
+
+    .project-detail-section {
+        padding-top: 10px !important;
+    }
+
+    .project-detail-section .section-heading {
+        margin-bottom: 18px !important;
+    }
+
+    /*
+     * 所有 5 张卡片始终绘制单层清晰背景。
+     * 不再依赖滚动停止后的 is-carousel-active 才提高透明度，
+     * 因而手指横滑过程中不会先空白/发灰，再延迟约一秒显示。
+     */
+    #project-detail-carousel .detail-list > .detail-card,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone {
+        opacity: 1 !important;
+        transition: none !important;
+    }
+
+    #project-detail-carousel .detail-card::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone::after {
+        display: block !important;
+        opacity: .88 !important;
+        transition: none !important;
+        will-change: auto !important;
+    }
+}
