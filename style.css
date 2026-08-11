@@ -6102,3 +6102,54 @@ body.content-protected [contenteditable="true"] {
         will-change: auto !important;
     }
 }
+
+
+/* V69 · 移动端轮播分层与绘制预算 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    /*
+     * 轮播辅助脚本只给视口中心及相邻卡添加 is-carousel-visible。
+     * 其余卡片保留宽高和滚动吸附位置，但跳过内部布局、绘制与图片合成。
+     */
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card {
+        content-visibility: auto !important;
+        contain: layout paint style !important;
+        contain-intrinsic-size: auto 680px !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        will-change: auto !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card.is-carousel-visible {
+        content-visibility: visible !important;
+    }
+
+    /*
+     * 清晰背景只在当前物理卡片和左右各一张上创建。
+     * 移除 translateZ，避免每张卡永久占用独立 GPU 合成层。
+     */
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card::after {
+        content: none !important;
+        display: none !important;
+        opacity: 0 !important;
+        transform: none !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+        transition: none !important;
+        will-change: auto !important;
+    }
+
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card.is-carousel-visible::after {
+        content: "" !important;
+        display: block !important;
+        opacity: .88 !important;
+    }
+
+    #project-detail-carousel.carousel-optimized .detail-list,
+    #project-detail-carousel.carousel-optimized .detail-carousel-viewport {
+        will-change: auto !important;
+        transform-style: flat !important;
+        perspective: none !important;
+    }
+}
