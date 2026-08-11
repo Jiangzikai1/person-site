@@ -6023,3 +6023,78 @@ body.content-protected [contenteditable="true"] {
         bottom: 10px !important;
     }
 }
+
+
+/* ============================================================
+   V68 · MOBILE MODAL NO-FLASH / LOW-COMPOSITE
+   手机打开项目详情时：
+   1) 不再让弹窗 opacity + 内容位移同时做过渡；
+   2) 不在弹窗头部实时执行 blur；
+   3) 背景图伪元素固定为普通绘制层，避免首次打开时 GPU 重建；
+   4) 弹窗内容独立隔离，减少与页面轮播/滚动区域互相抢合成资源。
+   ============================================================ */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    #project-modal.modal-overlay {
+        display: flex;
+        background: rgba(15, 23, 42, .58);
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transition: opacity .12s linear, visibility 0s linear !important;
+        contain: paint;
+    }
+
+    #project-modal.modal-overlay:not(.active) {
+        transition-delay: 0s !important;
+    }
+
+    #project-modal .modal-content {
+        transform: none !important;
+        opacity: 1 !important;
+        transition: none !important;
+        will-change: auto !important;
+        contain: layout paint style;
+        isolation: isolate;
+    }
+
+    #project-modal.active .modal-content {
+        transform: none !important;
+    }
+
+    #project-modal .modal-header {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: color-mix(in srgb, var(--surface-solid) 92%, transparent) !important;
+        isolation: isolate;
+    }
+
+    /* 首次打开最容易卡在这里：取消移动端 header 背景图的实时高斯模糊。 */
+    #project-modal .modal-header::before {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: none !important;
+        opacity: .24 !important;
+        will-change: auto !important;
+    }
+
+    #project-modal .modal-header::after {
+        background: linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--surface-solid) 96%, transparent) 0%,
+            color-mix(in srgb, var(--surface-solid) 86%, transparent) 62%,
+            color-mix(in srgb, var(--surface-solid) 72%, transparent) 100%
+        ) !important;
+    }
+
+    #project-modal .modal-body {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        contain: layout paint;
+    }
+
+    #project-modal .case-intro,
+    #project-modal .case-intro.is-ready {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}

@@ -1115,7 +1115,13 @@ const visitCountEl = document.getElementById('visit-count');
         }
 
         modal.classList.add('active');
-        requestAnimationFrame(() => modal.querySelector('.case-intro')?.classList.add('is-ready'));
+        // 移动端详情打开不再额外等待下一帧给 case-intro 加动画，
+        // 避免“弹窗已出现 → 内容再闪一次”的二次合成。桌面端保留原有过渡。
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            modal.querySelector('.case-intro')?.classList.add('is-ready');
+        } else {
+            requestAnimationFrame(() => modal.querySelector('.case-intro')?.classList.add('is-ready'));
+        }
         document.body.classList.add('modal-open');
 
         // 给详情弹窗建立一个独立的浏览历史记录。这样手机点击系统“返回”时，
