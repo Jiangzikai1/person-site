@@ -21,7 +21,14 @@
 
     
     <script defer src="https://cn.vercount.one/js"></script>
-    <link rel="stylesheet" href="style.css?v=20260810-8">
+
+    <!-- 网络请求提前开始；解码由 carousel-mobile.js 按当前/相邻/其余顺序调度。 -->
+    <link rel="preload" as="image" href="assets/projects/泰国.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="assets/projects/欧力德.jpg" fetchpriority="auto">
+    <link rel="preload" as="image" href="assets/projects/充电桩.jpg" fetchpriority="auto">
+    <link rel="preload" as="image" href="assets/projects/岩谷.jpg" fetchpriority="low">
+    <link rel="preload" as="image" href="assets/projects/oracle-bg.webp" fetchpriority="low">
+    <link rel="stylesheet" href="style.css?v=20260811-3">
     
 </head>
 <body>
@@ -970,6 +977,7 @@
 
 
 <script src="script.js?v=20260810-7"></script>
+<script src="carousel-mobile.js?v=20260811-1"></script>
 
     <!-- deploy-trigger: 2026-08-10T15:55:06.242Z -->
 </body>

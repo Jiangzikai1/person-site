@@ -6023,3 +6023,133 @@ body.content-protected [contenteditable="true"] {
         bottom: 10px !important;
     }
 }
+
+/* V67 · 手机项目轮播跟手优化
+   - 允许一次惯性手势自然经过多张卡，不再强制逐卡停顿；
+   - 原生滚动由手势控制，只有按钮/导航触发时才由 JS 请求平滑滚动；
+   - 手机只绘制一层背景，取消激活瞬间的 blur 合成，避免“切换后再加载”的观感。 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    #project-detail-carousel .detail-carousel-viewport {
+        scroll-behavior: auto !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card {
+        scroll-snap-stop: normal;
+        contain: style;
+    }
+
+    #project-detail-carousel .detail-card::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    #project-detail-carousel .detail-card::after {
+        filter: none !important;
+        -webkit-filter: none !important;
+        transform: translateZ(0) !important;
+        transition: opacity 100ms linear !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone::after {
+        opacity: .34 !important;
+    }
+
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active::after {
+        opacity: .88 !important;
+    }
+}
+
+
+/* V68 · 移动端项目定位与背景即时显示 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    /* 总览结束与详情标题之间只保留一个紧凑节奏；总览点击仍对齐 section 顶部。 */
+    .overview-section {
+        padding-bottom: 12px !important;
+    }
+
+    .project-detail-section {
+        padding-top: 10px !important;
+    }
+
+    .project-detail-section .section-heading {
+        margin-bottom: 18px !important;
+    }
+
+    /*
+     * 所有 5 张卡片始终绘制单层清晰背景。
+     * 不再依赖滚动停止后的 is-carousel-active 才提高透明度，
+     * 因而手指横滑过程中不会先空白/发灰，再延迟约一秒显示。
+     */
+    #project-detail-carousel .detail-list > .detail-card,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone {
+        opacity: 1 !important;
+        transition: none !important;
+    }
+
+    #project-detail-carousel .detail-card::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-prev::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-next::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-active::after,
+    #project-detail-carousel .detail-list > .detail-card.is-carousel-clone::after {
+        display: block !important;
+        opacity: .88 !important;
+        transition: none !important;
+        will-change: auto !important;
+    }
+}
+
+
+/* V69 · 移动端轮播分层与绘制预算 */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    /*
+     * 轮播辅助脚本只给视口中心及相邻卡添加 is-carousel-visible。
+     * 其余卡片保留宽高和滚动吸附位置，但跳过内部布局、绘制与图片合成。
+     */
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card {
+        content-visibility: auto !important;
+        contain: layout paint style !important;
+        contain-intrinsic-size: auto 680px !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        will-change: auto !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card.is-carousel-visible {
+        content-visibility: visible !important;
+    }
+
+    /*
+     * 清晰背景只在当前物理卡片和左右各一张上创建。
+     * 移除 translateZ，避免每张卡永久占用独立 GPU 合成层。
+     */
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card::after {
+        content: none !important;
+        display: none !important;
+        opacity: 0 !important;
+        transform: none !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+        transition: none !important;
+        will-change: auto !important;
+    }
+
+    #project-detail-carousel.carousel-optimized .detail-list > .detail-card.is-carousel-visible::after {
+        content: "" !important;
+        display: block !important;
+        opacity: .88 !important;
+    }
+
+    #project-detail-carousel.carousel-optimized .detail-list,
+    #project-detail-carousel.carousel-optimized .detail-carousel-viewport {
+        will-change: auto !important;
+        transform-style: flat !important;
+        perspective: none !important;
+    }
+}
