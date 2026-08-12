@@ -189,8 +189,8 @@
 
     const brandLabel = document.getElementById('brand-label');
     const brandSublabel = document.getElementById('brand-sublabel');
+    const homeBrand = { label: 'ZIKAI的项目博客', en: 'PERSONAL PORTFOLIO' };
     const brandSections = [
-        { selector: '#overview .profile-head h1', label: '蒋子凯', en: 'ABOUT ME', section: '#overview' },
         { selector: '#overview .project-overview .section-title-row h2', label: '项目总览', en: 'PROJECT OVERVIEW', section: '#overview' },
         { selector: '#experience .experience-label h2, #experience .section-title-row h2', label: '工作经历', en: 'WORK EXPERIENCE', section: '#experience' },
         { selector: '#projects .section-heading h2, #projects .section-title-row h2', label: '项目详情', en: 'PROJECT DETAILS', section: '#projects' },
@@ -259,7 +259,7 @@
             if (activeDetail) return { label: activeDetail.label, en: activeDetail.en };
         }
 
-        return best || { label: 'ZiKai Portfolio', en: 'PERSONAL PORTFOLIO' };
+        return best || homeBrand;
     };
 
     const updateBrandByViewport = () => {
@@ -433,6 +433,8 @@ const visitCountEl = document.getElementById('visit-count');
     const nativeDetailScroll = mobileDetailMedia.matches;
     let nativeDetailScrollTimer = 0;
     let nativeDetailScrollStartLeft = 0;
+    // 由弹窗模块在初始化完成后接管；轮播切换时提前准备当前项目内容。
+    let prepareModalForProject = () => {};
 
     const getDetailStep = () => detailCardWidth + detailCardGap;
     const getDetailTrackOffset = (trackIndex, dragOffset = 0) => {
@@ -483,6 +485,7 @@ const visitCountEl = document.getElementById('visit-count');
             card.classList.toggle('is-carousel-prev', relative === -1);
             card.classList.toggle('is-carousel-next', relative === 1);
         });
+        prepareModalForProject(detailCards[detailCarouselIndex]);
     };
 
     const updateDetailCarouselIndex = (index, { animate = true, fromUser = true, allowLoop = true } = {}) => {
@@ -1080,12 +1083,17 @@ const visitCountEl = document.getElementById('visit-count');
         return detailCards.find(item => item.dataset.project === id) || null;
     };
 
-    const openModalFromCard = (card) => {
-        const source = getCanonicalDetailCard(card);
-        if (!source) return;
-        const id = source.dataset.project;
+    let preparedModalId = '';
+    let modalPrepareVersion = 0;
 
-        // 弹窗标题同样保留 .megmeet_logo，避免 textContent 把品牌样式剥掉。
+    // 在页面空闲时把当前轮播项目预先放入不可见弹窗。
+    // 用户点击时无需再克隆和插入整块案例 DOM，弹窗只做显隐与轻量文本更新。
+    const prepareModalFromCard = (card) => {
+        const source = getCanonicalDetailCard(card);
+        if (!source) return null;
+        const id = source.dataset.project;
+        if (preparedModalId === id && modalBody?.childElementCount) return source;
+
         const title = source.querySelector('.detail-head h3')?.innerHTML.trim() || '项目详情';
         const date = source.querySelector('.detail-date')?.textContent.trim() || '';
         const tag = source.querySelector('.tag')?.textContent.trim() || '';
@@ -1095,11 +1103,8 @@ const visitCountEl = document.getElementById('visit-count');
         const modalContent = modal?.querySelector('.modal-content');
 
         if (modalContent) {
-            if (bgImage) {
-                modalContent.style.setProperty('--modal-bg-image', bgImage);
-            } else {
-                modalContent.style.removeProperty('--modal-bg-image');
-            }
+            if (bgImage) modalContent.style.setProperty('--modal-bg-image', bgImage);
+            else modalContent.style.removeProperty('--modal-bg-image');
         }
 
         modalTitle.innerHTML = title;
@@ -1108,21 +1113,49 @@ const visitCountEl = document.getElementById('visit-count');
         if (content) {
             content.hidden = false;
             content.removeAttribute('hidden');
-            modalBody.innerHTML = '';
-            modalBody.appendChild(content);
+            modalBody.replaceChildren(content);
         } else {
             modalBody.innerHTML = '<div class="case-empty"><strong>暂无详细信息</strong><p>请在 index.html 对应项目的 .project-case-data 中补充项目内容。</p></div>';
         }
 
+        preparedModalId = id;
+        return source;
+    };
+
+    const scheduleModalPreparation = (card) => {
+        const source = getCanonicalDetailCard(card);
+        if (!source || preparedModalId === source.dataset.project) return;
+        const version = ++modalPrepareVersion;
+        const run = () => {
+            if (version !== modalPrepareVersion || modal?.classList.contains('active')) return;
+            if (source.dataset.project !== detailCards[detailCarouselIndex]?.dataset.project) return;
+            prepareModalFromCard(source);
+        };
+        if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 500 });
+        else window.setTimeout(run, 0);
+    };
+
+    prepareModalForProject = scheduleModalPreparation;
+    prepareModalForProject(detailCards[detailCarouselIndex]);
+
+    const openModalFromCard = (card) => {
+        modalPrepareVersion += 1;
+        const source = prepareModalFromCard(card);
+        if (!source) return;
+        const id = source.dataset.project;
+
+        modalBody.scrollTop = 0;
+        const intro = modal.querySelector('.case-intro');
+        intro?.classList.remove('is-ready');
         modal.classList.add('active');
-        // 移动端详情打开不再额外等待下一帧给 case-intro 加动画，
-        // 避免“弹窗已出现 → 内容再闪一次”的二次合成。桌面端保留原有过渡。
-        if (window.matchMedia('(max-width: 768px)').matches) {
-            modal.querySelector('.case-intro')?.classList.add('is-ready');
-        } else {
-            requestAnimationFrame(() => modal.querySelector('.case-intro')?.classList.add('is-ready'));
-        }
         document.body.classList.add('modal-open');
+
+        // 手机端直接显示已预热内容；桌面端只保留一次轻量淡入。
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            intro?.classList.add('is-ready');
+        } else {
+            requestAnimationFrame(() => intro?.classList.add('is-ready'));
+        }
 
         // 给详情弹窗建立一个独立的浏览历史记录。这样手机点击系统“返回”时，
         // 只会关闭详情并回到主页，而不会直接退出网站。URL 不改变，分享/刷新行为也不受影响。
