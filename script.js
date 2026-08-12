@@ -244,6 +244,8 @@
 
     const getBrandCandidate = () => {
         if (!brandLabel) return null;
+        // 首屏可能与“项目总览”并排出现；未主动滚动时始终保留博客主标题。
+        if (window.scrollY <= 24) return homeBrand;
 
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
         const thresholdY = window.scrollY + getHeaderOffset() + (isMobile ? 72 : 108);
