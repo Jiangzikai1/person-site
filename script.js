@@ -294,7 +294,9 @@
     window.addEventListener('load', measureBrandPositions, { once: true });
     document.fonts?.ready?.then(measureBrandPositions);
     measureBrandPositions();
-const visitCountEl = document.getElementById('visit-count');
+    const visitCountEl = document.getElementById('visit-count');
+    const visitCountTrigger = document.getElementById('visit-count-trigger');
+    const visitorCountValue = document.getElementById('visitor-count-value');
     const vercountSitePv = document.getElementById('vercount_value_site_pv');
 
     const syncVisitCount = () => {
@@ -305,6 +307,25 @@ const visitCountEl = document.getElementById('visit-count');
         }
         return false;
     };
+
+    const unlockVisitCount = () => {
+        const password = window.prompt('请输入密码查看浏览量');
+        if (password === null) return;
+        if (password !== '666') {
+            window.alert('密码错误');
+            visitCountTrigger?.focus();
+            return;
+        }
+
+        if (visitorCountValue) visitorCountValue.hidden = false;
+        if (visitCountTrigger) {
+            visitCountTrigger.hidden = true;
+            visitCountTrigger.setAttribute('aria-expanded', 'true');
+        }
+        syncVisitCount();
+    };
+
+    visitCountTrigger?.addEventListener('click', unlockVisitCount);
 
     if (!vercountSitePv && visitCountEl) {
         const counterNode = document.createElement('span');

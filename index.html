@@ -21,7 +21,7 @@
 
     
     <script defer src="https://cn.vercount.one/js"></script>
-    <link rel="stylesheet" href="style.css?v=20260811-9">
+    <link rel="stylesheet" href="style.css?v=20260812-12">
     
 </head>
 <body>
@@ -878,13 +878,18 @@
         <a class="hover-lift" href="#top" id="back-to-top">返回顶部 ↑</a>
 
         
-        <span class="visitor-count">
-            <span class="count-icon">👁️</span>
-            
-            <span>浏览量: </span>
-            <span id="visit-count">加载中...</span>
+        <span class="visitor-count" id="visitor-count">
+            <button class="visitor-count-trigger" type="button" id="visit-count-trigger"
+                aria-controls="visitor-count-value" aria-expanded="false">
+                <span class="count-icon" aria-hidden="true">👁️</span>
+                <span>查看浏览量</span>
+            </button>
+            <span class="visitor-count-value" id="visitor-count-value" hidden>
+                <span class="count-icon" aria-hidden="true">👁️</span>
+                <span>浏览量:</span>
+                <span id="visit-count" aria-live="polite">加载中...</span>
+            </span>
             <span id="vercount_value_site_pv" hidden>Loading</span>
-            
         </span>
         
     </div>
@@ -969,7 +974,7 @@
 </div>
 
 
-<script src="script.js?v=20260812-11"></script>
+<script src="script.js?v=20260812-12"></script>
 
     <!-- deploy-trigger: 2026-08-10T15:55:06.242Z -->
 </body>
